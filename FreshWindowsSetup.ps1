@@ -13,29 +13,29 @@ param([switch]$ValidateOnly)
 Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
 $AppName = 'Fresh Windows Setup'
-$AppVersion = '1.1.0'
+$AppVersion = '1.2.0'
 $AppAuthor = 'Emocinis Taikinys'
 
 $ProgramCatalog = @(
-    [pscustomobject]@{ Name = 'Vivaldi web browser'; InstallType = 'WinGet'; Id = 'Vivaldi.Vivaldi'; Source = 'winget'; Default = $true }
-    [pscustomobject]@{ Name = 'ChatGPT (official download page)'; InstallType = 'OfficialPage'; Url = 'https://chatgpt.com/download/'; Default = $true }
-    [pscustomobject]@{ Name = 'yt-dlp'; InstallType = 'WinGet'; Id = 'yt-dlp.yt-dlp'; Source = 'winget'; Default = $true }
-    [pscustomobject]@{ Name = 'qBittorrent'; InstallType = 'WinGet'; Id = 'qBittorrent.qBittorrent'; Source = 'winget'; Default = $true }
-    [pscustomobject]@{ Name = 'Steam'; InstallType = 'WinGet'; Id = 'Valve.Steam'; Source = 'winget'; Default = $true }
-    [pscustomobject]@{ Name = 'Notepad++'; InstallType = 'WinGet'; Id = 'Notepad++.Notepad++'; Source = 'winget'; Default = $true }
-    [pscustomobject]@{ Name = 'Python 3.14'; InstallType = 'WinGet'; Id = 'Python.Python.3.14'; Source = 'winget'; Default = $true }
-    [pscustomobject]@{ Name = 'AMD driver auto-detect (official page)'; InstallType = 'OfficialPage'; Url = 'https://www.amd.com/en/support/download/drivers.html'; Default = $true }
-    [pscustomobject]@{ Name = 'Windows HDR Calibration (Microsoft Store)'; InstallType = 'WinGet'; Id = '9N7F2SM5D1LR'; Source = 'msstore'; Default = $true }
-    [pscustomobject]@{ Name = 'PotPlayer 64-bit'; InstallType = 'WinGet'; Id = 'Daum.PotPlayer'; Source = 'winget'; Default = $true }
-    [pscustomobject]@{ Name = 'OpenRGB'; InstallType = 'WinGet'; Id = 'OpenRGB.OpenRGB'; Source = 'winget'; Default = $true }
-    [pscustomobject]@{ Name = 'OpenRGB Effects Plugin'; InstallType = 'WinGet'; Id = 'OpenRGB.OpenRGBEffectsPlugin'; Source = 'winget'; Default = $true }
-    [pscustomobject]@{ Name = 'TP-Link Archer TBE550E Wi-Fi/Bluetooth drivers (official page)'; InstallType = 'OfficialPage'; Url = 'https://www.tp-link.com/en/support/download/archer-tbe550e/'; Default = $true }
-    [pscustomobject]@{ Name = 'Stremio'; InstallType = 'WinGet'; Id = 'Stremio.Stremio'; Source = 'winget'; Default = $true }
-    [pscustomobject]@{ Name = 'Icaros'; InstallType = 'WinGet'; Id = 'Xanashi.Icaros'; Source = 'winget'; Default = $true }
+    [pscustomobject]@{ Name = '🎮 AMD tvarkyklių aptikimas (oficialus puslapis)'; InstallType = 'OfficialPage'; Url = 'https://www.amd.com/en/support/download/drivers.html'; Default = $true }
+    [pscustomobject]@{ Name = '🤖 ChatGPT (oficialus atsisiuntimo puslapis)'; InstallType = 'OfficialPage'; Url = 'https://chatgpt.com/download/'; Default = $true }
+    [pscustomobject]@{ Name = '🖼️ Icaros'; InstallType = 'WinGet'; Id = 'Xanashi.Icaros'; Source = 'winget'; Default = $true }
+    [pscustomobject]@{ Name = '📝 Notepad++'; InstallType = 'WinGet'; Id = 'Notepad++.Notepad++'; Source = 'winget'; Default = $true }
+    [pscustomobject]@{ Name = '💡 OpenRGB'; InstallType = 'WinGet'; Id = 'OpenRGB.OpenRGB'; Source = 'winget'; Default = $true }
+    [pscustomobject]@{ Name = '✨ OpenRGB Effects Plugin'; InstallType = 'WinGet'; Id = 'OpenRGB.OpenRGBEffectsPlugin'; Source = 'winget'; Default = $true }
+    [pscustomobject]@{ Name = '🎬 PotPlayer 64 bitų'; InstallType = 'WinGet'; Id = 'Daum.PotPlayer'; Source = 'winget'; Default = $true }
+    [pscustomobject]@{ Name = '🐍 Python 3.14'; InstallType = 'WinGet'; Id = 'Python.Python.3.14'; Source = 'winget'; Default = $true }
+    [pscustomobject]@{ Name = '🧲 qBittorrent'; InstallType = 'WinGet'; Id = 'qBittorrent.qBittorrent'; Source = 'winget'; Default = $true }
+    [pscustomobject]@{ Name = '🎮 Steam'; InstallType = 'WinGet'; Id = 'Valve.Steam'; Source = 'winget'; Default = $true }
+    [pscustomobject]@{ Name = '🍿 Stremio'; InstallType = 'WinGet'; Id = 'Stremio.Stremio'; Source = 'winget'; Default = $true }
+    [pscustomobject]@{ Name = '📡 TP-Link Archer TBE550E Wi-Fi ir Bluetooth tvarkyklės (oficialus puslapis)'; InstallType = 'OfficialPage'; Url = 'https://www.tp-link.com/en/support/download/archer-tbe550e/'; Default = $true }
+    [pscustomobject]@{ Name = '🌐 Vivaldi naršyklė'; InstallType = 'WinGet'; Id = 'Vivaldi.Vivaldi'; Source = 'winget'; Default = $true }
+    [pscustomobject]@{ Name = '🌈 Windows HDR Calibration (Microsoft Store)'; InstallType = 'WinGet'; Id = '9N7F2SM5D1LR'; Source = 'msstore'; Default = $true }
+    [pscustomobject]@{ Name = '⬇️ yt-dlp'; InstallType = 'WinGet'; Id = 'yt-dlp.yt-dlp'; Source = 'winget'; Default = $true }
 )
 
 $VivaldiExtensionCatalog = @(
-    [pscustomobject]@{ Name = 'Bitwarden Password Manager'; Id = 'nngceckbapebfimnlniiiahkandclblb'; Default = $true }
+    [pscustomobject]@{ Name = 'Bitwarden slaptažodžių tvarkyklė'; Id = 'nngceckbapebfimnlniiiahkandclblb'; Default = $true }
     [pscustomobject]@{ Name = 'Hide Scrollbar'; Id = 'gngenlhkmpneoiicndbjghjhpogdcncl'; Default = $true }
     [pscustomobject]@{ Name = 'Imagus Reborn'; Id = 'fcjmgeodgobggcppooncdagfkogfffdm'; Default = $true }
     [pscustomobject]@{ Name = 'SponsorBlock for YouTube'; Id = 'mnjggcdmjocbbbhaepdhchncahnbgone'; Default = $true }
@@ -46,71 +46,72 @@ $VivaldiExtensionCatalog = @(
 $BundledAppCatalog = @(
     [pscustomobject]@{ Name = 'Clipchamp'; Package = 'Clipchamp.Clipchamp'; Default = $true }
     [pscustomobject]@{ Name = 'Dev Home'; Package = 'Microsoft.Windows.DevHome'; Default = $true }
-    [pscustomobject]@{ Name = 'Feedback Hub'; Package = 'Microsoft.WindowsFeedbackHub'; Default = $true }
-    [pscustomobject]@{ Name = 'Microsoft 365 (Office)'; Package = 'Microsoft.MicrosoftOfficeHub'; Default = $true }
-    [pscustomobject]@{ Name = 'Microsoft News'; Package = 'Microsoft.BingNews'; Default = $true }
+    [pscustomobject]@{ Name = 'Atsiliepimų telkinys (Feedback Hub)'; Package = 'Microsoft.WindowsFeedbackHub'; Default = $true }
+    [pscustomobject]@{ Name = 'Microsoft 365 (Office) programėlė'; Package = 'Microsoft.MicrosoftOfficeHub'; Default = $true }
+    [pscustomobject]@{ Name = 'Microsoft naujienos'; Package = 'Microsoft.BingNews'; Default = $true }
     [pscustomobject]@{ Name = 'Microsoft Solitaire Collection'; Package = 'Microsoft.MicrosoftSolitaireCollection'; Default = $true }
-    [pscustomobject]@{ Name = 'Microsoft Weather'; Package = 'Microsoft.BingWeather'; Default = $true }
-    [pscustomobject]@{ Name = 'People'; Package = 'Microsoft.People'; Default = $true }
-    [pscustomobject]@{ Name = 'Notepad'; Package = 'Microsoft.WindowsNotepad'; Default = $true }
-    [pscustomobject]@{ Name = 'Xbox app'; Package = 'Microsoft.GamingApp'; Default = $true }
+    [pscustomobject]@{ Name = 'Microsoft orai'; Package = 'Microsoft.BingWeather'; Default = $true }
+    [pscustomobject]@{ Name = 'Žmonės (People)'; Package = 'Microsoft.People'; Default = $true }
+    [pscustomobject]@{ Name = 'Užrašinė (Notepad)'; Package = 'Microsoft.WindowsNotepad'; Default = $true }
+    [pscustomobject]@{ Name = 'Xbox programėlė'; Package = 'Microsoft.GamingApp'; Default = $true }
     [pscustomobject]@{ Name = 'Xbox Game Bar'; Package = 'Microsoft.XboxGamingOverlay'; Default = $true }
     [pscustomobject]@{ Name = 'Xbox Identity Provider'; Package = 'Microsoft.XboxIdentityProvider'; Default = $true }
     [pscustomobject]@{ Name = 'Xbox Speech-to-Text Overlay'; Package = 'Microsoft.XboxSpeechToTextOverlay'; Default = $true }
     [pscustomobject]@{ Name = 'Xbox TCUI'; Package = 'Microsoft.Xbox.TCUI'; Default = $true }
     [pscustomobject]@{ Name = 'OneDrive'; Package = 'OneDriveDesktop'; Kind = 'OneDrive'; Default = $true }
-    [pscustomobject]@{ Name = 'Microsoft Office hub'; Package = 'Microsoft.MicrosoftOfficeHub'; Default = $true }
-    [pscustomobject]@{ Name = 'Microsoft Office Desktop package'; Package = 'Microsoft.Office.Desktop'; Default = $true }
-    [pscustomobject]@{ Name = 'Windows Backup app (disable; retain shared Windows shell package)'; Package = 'WindowsBackup'; Kind = 'WindowsBackup'; Default = $true }
+    [pscustomobject]@{ Name = 'Microsoft Office darbalaukio paketas'; Package = 'Microsoft.Office.Desktop'; Default = $true }
+    [pscustomobject]@{ Name = 'Windows atsarginis kopijavimas (išjungti, bet palikti bendrą Windows apvalkalo paketą)'; Package = 'WindowsBackup'; Kind = 'WindowsBackup'; Default = $true }
+    [pscustomobject]@{ Name = 'Microsoft Edge naršyklė ir jos naršyklės naujinimo komponentai'; Package = 'MicrosoftEdge'; Kind = 'Edge'; Default = $true }
 )
 
 $PrivacyCatalog = @(
-    [pscustomobject]@{ Name = 'Reduce diagnostic data to the lowest supported level'; Key = 'DiagnosticData'; Default = $true }
-    [pscustomobject]@{ Name = 'Disable advertising ID and personalized ads'; Key = 'Advertising'; Default = $true }
-    [pscustomobject]@{ Name = 'Disable tailored experiences using diagnostic data'; Key = 'TailoredExperiences'; Default = $true }
-    [pscustomobject]@{ Name = 'Disable Windows suggestions and consumer content'; Key = 'Suggestions'; Default = $true }
-    [pscustomobject]@{ Name = 'Disable feedback prompts'; Key = 'Feedback'; Default = $true }
-    [pscustomobject]@{ Name = 'Disable activity history publishing and upload'; Key = 'ActivityHistory'; Default = $true }
-    [pscustomobject]@{ Name = 'Reduce typing and inking personalization collection'; Key = 'InputPersonalization'; Default = $true }
+    [pscustomobject]@{ Name = 'Sumažinti diagnostikos duomenis iki mažiausio palaikomo lygio'; Key = 'DiagnosticData'; Default = $true }
+    [pscustomobject]@{ Name = 'Išjungti reklamos ID ir suasmenintas reklamas'; Key = 'Advertising'; Default = $true }
+    [pscustomobject]@{ Name = 'Išjungti pagal diagnostikos duomenis pritaikytas funkcijas'; Key = 'TailoredExperiences'; Default = $true }
+    [pscustomobject]@{ Name = 'Išjungti Windows pasiūlymus ir reklaminį turinį'; Key = 'Suggestions'; Default = $true }
+    [pscustomobject]@{ Name = 'Išjungti atsiliepimų prašymus'; Key = 'Feedback'; Default = $true }
+    [pscustomobject]@{ Name = 'Išjungti veiklos istorijos skelbimą ir siuntimą'; Key = 'ActivityHistory'; Default = $true }
+    [pscustomobject]@{ Name = 'Sumažinti rašymo ir braižymo suasmeninimo duomenų rinkimą'; Key = 'InputPersonalization'; Default = $true }
 )
 
 $WindowsSettingsGroups = [ordered]@{
-    'Taskbar and Start' = @(
-        [pscustomobject]@{ Name = 'Align taskbar to the left'; Key = 'TaskbarLeft'; Default = $true }
-        [pscustomobject]@{ Name = 'Hide Search from the taskbar'; Key = 'HideSearch'; Default = $true }
-        [pscustomobject]@{ Name = 'Hide Widgets from the taskbar'; Key = 'HideWidgets'; Default = $true }
-        [pscustomobject]@{ Name = 'Disable Start-menu recommendations'; Key = 'DisableStartRecommendations'; Default = $true }
-        [pscustomobject]@{ Name = 'Disable recently opened items'; Key = 'DisableRecentItems'; Default = $true }
-        [pscustomobject]@{ Name = 'Automatically hide the taskbar'; Key = 'TaskbarAutoHide'; Default = $true }
+    'Užduočių juosta ir Start meniu' = @(
+        [pscustomobject]@{ Name = 'Lygiuoti užduočių juostą kairėje'; Key = 'TaskbarLeft'; Default = $true }
+        [pscustomobject]@{ Name = 'Slėpti paiešką užduočių juostoje'; Key = 'HideSearch'; Default = $true }
+        [pscustomobject]@{ Name = 'Slėpti valdiklius užduočių juostoje'; Key = 'HideWidgets'; Default = $true }
+        [pscustomobject]@{ Name = 'Išjungti Start meniu rekomendacijas'; Key = 'DisableStartRecommendations'; Default = $true }
+        [pscustomobject]@{ Name = 'Išjungti neseniai atidarytų elementų rodymą'; Key = 'DisableRecentItems'; Default = $true }
+        [pscustomobject]@{ Name = 'Automatiškai slėpti užduočių juostą'; Key = 'TaskbarAutoHide'; Default = $true }
     )
-    'File Explorer' = @(
-        [pscustomobject]@{ Name = 'Show file extensions'; Key = 'ShowFileExtensions'; Default = $true }
-        [pscustomobject]@{ Name = 'Show hidden files'; Key = 'ShowHiddenFiles'; Default = $false }
-        [pscustomobject]@{ Name = 'Open File Explorer to This PC'; Key = 'ExplorerThisPC'; Default = $true }
-        [pscustomobject]@{ Name = 'Use compact view'; Key = 'CompactView'; Default = $true }
-        [pscustomobject]@{ Name = 'Restore the classic right-click menu'; Key = 'ClassicContextMenu'; Default = $true }
-        [pscustomobject]@{ Name = 'Remove Gallery from Explorer'; Key = 'RemoveGallery'; Default = $true }
-        [pscustomobject]@{ Name = 'Remove Home from Explorer'; Key = 'RemoveHome'; Default = $true }
+    'Failų naršyklė' = @(
+        [pscustomobject]@{ Name = 'Rodyti failų plėtinius'; Key = 'ShowFileExtensions'; Default = $true }
+        [pscustomobject]@{ Name = 'Rodyti paslėptus failus'; Key = 'ShowHiddenFiles'; Default = $false }
+        [pscustomobject]@{ Name = 'Failų naršyklę atverti ties „Šis kompiuteris“'; Key = 'ExplorerThisPC'; Default = $true }
+        [pscustomobject]@{ Name = 'Naudoti kompaktišką rodinį'; Key = 'CompactView'; Default = $true }
+        [pscustomobject]@{ Name = 'Grąžinti klasikinį dešiniojo pelės mygtuko meniu'; Key = 'ClassicContextMenu'; Default = $true }
+        [pscustomobject]@{ Name = 'Pašalinti „Galeriją“ iš failų naršyklės'; Key = 'RemoveGallery'; Default = $true }
+        [pscustomobject]@{ Name = 'Pašalinti „Pagrindinį“ iš failų naršyklės'; Key = 'RemoveHome'; Default = $true }
     )
-    'Privacy and appearance' = @(
-        [pscustomobject]@{ Name = 'Disable Bing/web results in Start search'; Key = 'DisableWebSearch'; Default = $true }
-        [pscustomobject]@{ Name = 'Disable Windows tips and suggestions'; Key = 'DisableTips'; Default = $true }
-        [pscustomobject]@{ Name = 'Disable startup delay'; Key = 'DisableStartupDelay'; Default = $true }
-        [pscustomobject]@{ Name = 'Disable mouse acceleration'; Key = 'DisableMouseAcceleration'; Default = $true }
-        [pscustomobject]@{ Name = 'Enable dark mode'; Key = 'DarkMode'; Default = $true }
-        [pscustomobject]@{ Name = 'Disable lock-screen suggestions'; Key = 'DisableLockScreenSuggestions'; Default = $true }
+    'Išvaizda ir naudojimas' = @(
+        [pscustomobject]@{ Name = 'Išjungti Bing ir interneto rezultatus Start paieškoje'; Key = 'DisableWebSearch'; Default = $true }
+        [pscustomobject]@{ Name = 'Išjungti Windows patarimus ir pasiūlymus'; Key = 'DisableTips'; Default = $true }
+        [pscustomobject]@{ Name = 'Išjungti programų paleidimo delsą'; Key = 'DisableStartupDelay'; Default = $true }
+        [pscustomobject]@{ Name = 'Išjungti pelės pagreitį'; Key = 'DisableMouseAcceleration'; Default = $true }
+        [pscustomobject]@{ Name = 'Įjungti Windows tamsųjį režimą'; Key = 'DarkMode'; Default = $true }
+        [pscustomobject]@{ Name = 'Išjungti užrakinimo ekrano pasiūlymus'; Key = 'DisableLockScreenSuggestions'; Default = $true }
     )
-    'System and power' = @(
-        [pscustomobject]@{ Name = 'Disable Fast Startup'; Key = 'DisableFastStartup'; Default = $true }
-        [pscustomobject]@{ Name = 'Disable System Restore'; Key = 'DisableSystemRestore'; Default = $true }
-        [pscustomobject]@{ Name = 'Disable Windows Backup and settings sync'; Key = 'DisableWindowsBackup'; Default = $true }
+    'Privatumas' = $PrivacyCatalog
+    'Sistema ir maitinimas' = @(
+        [pscustomobject]@{ Name = 'Išjungti greitąjį paleidimą'; Key = 'DisableFastStartup'; Default = $true }
+        [pscustomobject]@{ Name = 'Išjungti sistemos atkūrimą'; Key = 'DisableSystemRestore'; Default = $true }
+        [pscustomobject]@{ Name = 'Išjungti Windows atsarginį kopijavimą ir nustatymų sinchronizavimą'; Key = 'DisableWindowsBackup'; Default = $true }
     )
-    'Network and gaming' = @(
-        [pscustomobject]@{ Name = 'Set connected networks to Private'; Key = 'PrivateNetwork'; Default = $true }
-        [pscustomobject]@{ Name = 'Disable Xbox Game Bar recording'; Key = 'DisableGameBarRecording'; Default = $true }
+    'Tinklas ir žaidimai' = @(
+        [pscustomobject]@{ Name = 'Nustatyti prijungtus tinklus kaip privačius'; Key = 'PrivateNetwork'; Default = $true }
+        [pscustomobject]@{ Name = 'Išjungti Xbox Game Bar įrašymą'; Key = 'DisableGameBarRecording'; Default = $true }
     )
-    'Region' = @(
-        [pscustomobject]@{ Name = 'Set region and time zone to Lithuania / Vilnius'; Key = 'LithuaniaRegion'; Default = $true }
+    'Regionas' = @(
+        [pscustomobject]@{ Name = 'Nustatyti Lietuvos regioną ir Vilniaus laiko juostą'; Key = 'LithuaniaRegion'; Default = $true }
     )
 }
 
@@ -121,7 +122,7 @@ function Test-IsAdministrator {
 }
 
 if (-not $ValidateOnly -and -not (Test-IsAdministrator)) {
-    if (-not $PSCommandPath) { throw 'Save this script before running it.' }
+    if (-not $PSCommandPath) { throw 'Prieš paleisdami įrašykite šį scenarijų į failą.' }
     Start-Process -FilePath 'powershell.exe' -Verb RunAs -ArgumentList @(
         '-NoProfile'
         '-ExecutionPolicy'
@@ -147,8 +148,17 @@ function Write-SetupLog {
     $line = '[{0:HH:mm:ss}] [{1}] {2}' -f (Get-Date), $Level, $Message
     Add-Content -LiteralPath $script:LogPath -Value $line -Encoding UTF8
     if ($null -ne $script:LogBox) {
+        $start = $script:LogBox.TextLength
         $script:LogBox.AppendText($line + [Environment]::NewLine)
+        $script:LogBox.Select($start, $line.Length)
+        $script:LogBox.SelectionColor = [Drawing.Color]::FromArgb(235, 235, 235)
+        if ($Level -eq 'ERROR') {
+            $script:LogBox.SelectionBackColor = [Drawing.Color]::FromArgb(128, 28, 38)
+        } else {
+            $script:LogBox.SelectionBackColor = $script:LogBox.BackColor
+        }
         $script:LogBox.SelectionStart = $script:LogBox.TextLength
+        $script:LogBox.SelectionLength = 0
         $script:LogBox.ScrollToCaret()
         [System.Windows.Forms.Application]::DoEvents()
     }
@@ -173,9 +183,9 @@ function Set-RegistryValue {
         $matches = ([string]$Value) -ceq ([string]$actual)
     }
     if (-not $matches) {
-        throw "Read-back verification failed for $Path\$Name. Expected '$Value', found '$actual'."
+        throw "Nepavyko patikrinti $Path\$Name. Tikėtasi '$Value', rasta '$actual'."
     }
-    Write-SetupLog "Verified: $Path\$Name = $actual."
+    Write-SetupLog "Patikrinta: $Path\$Name = $actual."
 }
 
 function Set-RegistryDefaultValue {
@@ -184,9 +194,19 @@ function Set-RegistryDefaultValue {
     Set-Item -LiteralPath $Path -Value $Value -Force
     $actual = (Get-Item -LiteralPath $Path -ErrorAction Stop).GetValue('')
     if ([string]$actual -cne [string]$Value) {
-        throw "Read-back verification failed for the default value at $Path."
+        throw "Nepavyko patikrinti numatytosios registro reikšmės ties $Path."
     }
-    Write-SetupLog "Verified default registry value: $Path."
+    Write-SetupLog "Patikrinta numatytoji registro reikšmė: $Path."
+}
+
+function Remove-RegistryValue {
+    param([Parameter(Mandatory)][string]$Path, [Parameter(Mandatory)][string]$Name)
+    if (Test-Path -LiteralPath $Path) {
+        Remove-ItemProperty -LiteralPath $Path -Name $Name -Force -ErrorAction SilentlyContinue
+    }
+    $remaining = Get-ItemPropertyValue -LiteralPath $Path -Name $Name -ErrorAction SilentlyContinue
+    if ($null -ne $remaining) { throw "Nepavyko patikrinti registro reikšmės pašalinimo: $Path\$Name." }
+    Write-SetupLog "Patikrinta, kad registro reikšmės nėra: $Path\$Name."
 }
 
 function Invoke-LoggedAction {
@@ -194,28 +214,28 @@ function Invoke-LoggedAction {
     Write-SetupLog "$Description..."
     try {
         & $Action
-        Write-SetupLog "$Description completed." 'OK'
+    Write-SetupLog "$Description – atlikta." 'OK'
     } catch {
-        Write-SetupLog "$Description failed: $($_.Exception.Message)" 'ERROR'
+        Write-SetupLog "$Description – nepavyko: $($_.Exception.Message)" 'ERROR'
     }
 }
 
 function Invoke-NativeCommand {
     param([Parameter(Mandatory)][string]$FilePath, [Parameter(Mandatory)][string[]]$Arguments)
     & $FilePath @Arguments 2>&1 | ForEach-Object { Write-SetupLog ([string]$_) }
-    if ($LASTEXITCODE -ne 0) { throw "$FilePath exited with code $LASTEXITCODE." }
+    if ($LASTEXITCODE -ne 0) { throw "$FilePath baigė darbą su kodu $LASTEXITCODE." }
 }
 
 function Install-Programs {
     param([object[]]$Items)
-    if ($Items.Count -eq 0) { Write-SetupLog 'Programs: nothing selected.' 'WARN'; return }
+    if ($Items.Count -eq 0) { Write-SetupLog 'Programos: niekas nepasirinkta.' 'WARN'; return }
     $winget = Get-Command 'winget.exe' -ErrorAction SilentlyContinue
-    if (-not $winget) { throw 'WinGet is unavailable. Install or update Microsoft App Installer and try again.' }
+    if (-not $winget) { throw 'WinGet nepasiekiamas. Įdiekite arba atnaujinkite Microsoft App Installer ir bandykite dar kartą.' }
     foreach ($item in $Items) {
-        Invoke-LoggedAction -Description "Install $($item.Name)" -Action {
+        Invoke-LoggedAction -Description "Diegti: $($item.Name)" -Action {
             if ($item.InstallType -eq 'OfficialPage') {
                 Start-Process -FilePath $item.Url
-                Write-SetupLog "Opened the verified publisher page: $($item.Url). Complete this hardware/app-specific install manually." 'WARN'
+                Write-SetupLog "Atvertas patikrintas leidėjo puslapis: $($item.Url). Šį įrangai ar programai būdingą diegimą užbaikite rankiniu būdu." 'WARN'
                 return
             }
 
@@ -224,26 +244,26 @@ function Install-Programs {
 
             $listOutput = @(& $winget.Source list --id $item.Id --exact --source $item.Source --accept-source-agreements --disable-interactivity 2>&1)
             if ($LASTEXITCODE -ne 0 -or -not (($listOutput -join "`n") -match [regex]::Escape($item.Id))) {
-                throw "WinGet read-back verification could not find $($item.Id) after installation."
+                throw "Po diegimo WinGet patikra nerado $($item.Id)."
             }
-            Write-SetupLog "Verified installed package: $($item.Id)."
+            Write-SetupLog "Patikrintas įdiegtas paketas: $($item.Id)."
         }
     }
 }
 
 function Configure-VivaldiExtensions {
     param([object[]]$Items)
-    if ($Items.Count -eq 0) { Write-SetupLog 'Vivaldi extensions: nothing selected.' 'WARN'; return }
+    if ($Items.Count -eq 0) { Write-SetupLog 'Vivaldi plėtiniai: niekas nepasirinkta.' 'WARN'; return }
     $policyPath = 'HKLM:\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist'
     if (-not (Test-Path -LiteralPath $policyPath)) { New-Item -Path $policyPath -Force | Out-Null }
     $index = 1
     foreach ($item in $Items) {
         $policyValue = '{0};https://clients2.google.com/service/update2/crx' -f $item.Id
         Set-RegistryValue -Path $policyPath -Name ([string]$index) -Value $policyValue -Type String
-        Write-SetupLog "Vivaldi extension policy added: $($item.Name)." 'OK'
+        Write-SetupLog "Pridėta Vivaldi plėtinio politika: $($item.Name)." 'OK'
         $index++
     }
-    Write-SetupLog 'Vivaldi policy deployment is experimental. Verify the extensions after starting Vivaldi.' 'WARN'
+    Write-SetupLog 'Vivaldi politikos diegimas yra eksperimentinis. Paleidę Vivaldi patikrinkite plėtinius.' 'WARN'
 }
 
 function Set-PrivacyOption {
@@ -253,7 +273,7 @@ function Set-PrivacyOption {
             Set-RegistryValue 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection' 'AllowTelemetry' 1
             Set-RegistryValue 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection' 'LimitDiagnosticLogCollection' 1
             Set-RegistryValue 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection' 'LimitDumpCollection' 1
-            Write-SetupLog 'Diagnostic data is set to the lowest generally supported level; Windows edition rules still apply.' 'WARN'
+            Write-SetupLog 'Diagnostikos duomenys nustatyti į mažiausią įprastai palaikomą lygį; vis tiek galioja Windows leidimo apribojimai.' 'WARN'
         }
         'Advertising' {
             Set-RegistryValue 'HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo' 'Enabled' 0
@@ -288,15 +308,15 @@ function Set-PrivacyOption {
             Set-RegistryValue 'HKCU:\Software\Microsoft\InputPersonalization' 'RestrictImplicitInkCollection' 1
             Set-RegistryValue 'HKCU:\Software\Microsoft\InputPersonalization' 'RestrictImplicitTextCollection' 1
         }
-        default { throw "Unknown privacy option: $Key" }
+        default { throw "Neatpažinta privatumo parinktis: $Key" }
     }
 }
 
 function Remove-BundledApps {
     param([object[]]$Items)
-    if ($Items.Count -eq 0) { Write-SetupLog 'Bundled apps: nothing selected.' 'WARN'; return }
+    if ($Items.Count -eq 0) { Write-SetupLog 'Integruotos programėlės: niekas nepasirinkta.' 'WARN'; return }
     foreach ($item in $Items) {
-        Invoke-LoggedAction -Description "Remove $($item.Name)" -Action {
+        Invoke-LoggedAction -Description "Pašalinti: $($item.Name)" -Action {
             $kindProperty = $item.PSObject.Properties['Kind']
             $kind = if ($null -ne $kindProperty) { [string]$kindProperty.Value } else { 'Appx' }
 
@@ -308,22 +328,69 @@ function Remove-BundledApps {
                 $setup = $setupCandidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
                 if ($setup) {
                     $process = Start-Process -FilePath $setup -ArgumentList @('/uninstall') -Wait -PassThru
-                    if ($process.ExitCode -notin @(0, 19)) { throw "OneDrive uninstaller exited with code $($process.ExitCode)." }
+                    if ($process.ExitCode -notin @(0, 19)) { throw "OneDrive šalinimo programa baigė darbą su kodu $($process.ExitCode)." }
                 }
                 $oneDriveExecutables = @(
                     (Join-Path $env:LOCALAPPDATA 'Microsoft\OneDrive\OneDrive.exe')
                     (Join-Path $env:ProgramFiles 'Microsoft OneDrive\OneDrive.exe')
                 )
                 if ($oneDriveExecutables | Where-Object { Test-Path -LiteralPath $_ }) {
-                    throw 'OneDrive read-back verification still found an installed executable.'
+                    throw 'OneDrive patikra vis dar aptiko įdiegtą vykdomąjį failą.'
                 }
-                Write-SetupLog 'Verified: OneDrive executable is absent.'
+                Write-SetupLog 'Patikrinta: OneDrive vykdomojo failo nėra.'
                 return
             }
 
             if ($kind -eq 'WindowsBackup') {
                 Set-WindowsOption -Key 'DisableWindowsBackup'
-                Write-SetupLog 'Windows Backup is part of a shared Windows shell package, so the package itself was retained.' 'WARN'
+                Write-SetupLog 'Windows atsarginio kopijavimo programa yra bendro Windows apvalkalo paketo dalis, todėl pats paketas paliktas.' 'WARN'
+                return
+            }
+
+            if ($kind -eq 'Edge') {
+                $edgeGuid = '{56EB18F8-B008-4CBD-B6D2-8C97FE7E9062}'
+                $webViewGuid = '{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'
+                $edgePolicy = 'HKLM:\SOFTWARE\Policies\Microsoft\EdgeUpdate'
+                Set-RegistryValue $edgePolicy ("Install$edgeGuid") 0
+                Set-RegistryValue $edgePolicy ("Update$edgeGuid") 0
+                Set-RegistryValue $edgePolicy ("Uninstall$($edgeGuid.ToLowerInvariant())") 1
+                Set-RegistryValue $edgePolicy ("Install$webViewGuid") 1
+                Set-RegistryValue $edgePolicy ("Update$webViewGuid") 1
+
+                Get-Process -Name 'msedge' -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+                $edgeRoot = Join-Path ${env:ProgramFiles(x86)} 'Microsoft\Edge\Application'
+                $setup = Get-ChildItem -LiteralPath $edgeRoot -Filter 'setup.exe' -Recurse -ErrorAction SilentlyContinue |
+                    Where-Object { $_.FullName -match '\\Installer\\setup\.exe$' } |
+                    Sort-Object FullName -Descending |
+                    Select-Object -First 1
+                if ($setup) {
+                    $process = Start-Process -FilePath $setup.FullName -ArgumentList @('--uninstall', '--system-level', '--verbose-logging', '--force-uninstall') -Wait -PassThru
+                    if ($process.ExitCode -ne 0) { throw "Microsoft Edge šalinimo programa baigė darbą su kodu $($process.ExitCode)." }
+                }
+
+                foreach ($runPath in @(
+                    'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run',
+                    'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run',
+                    'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run'
+                )) {
+                    Remove-RegistryValue $runPath 'MicrosoftEdgeAutoLaunch'
+                }
+
+                foreach ($shortcut in @(
+                    (Join-Path $env:PUBLIC 'Desktop\Microsoft Edge.lnk'),
+                    (Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Microsoft Edge.lnk'),
+                    (Join-Path $env:ProgramData 'Microsoft\Windows\Start Menu\Programs\Microsoft Edge.lnk')
+                )) {
+                    if (Test-Path -LiteralPath $shortcut) { Remove-Item -LiteralPath $shortcut -Force }
+                    if (Test-Path -LiteralPath $shortcut) { throw "Nepavyko pašalinti nuorodos: $shortcut" }
+                }
+
+                $edgeExecutable = Join-Path $edgeRoot 'msedge.exe'
+                $versionedEdge = @(Get-ChildItem -LiteralPath $edgeRoot -Filter 'msedge.exe' -Recurse -ErrorAction SilentlyContinue)
+                if ((Test-Path -LiteralPath $edgeExecutable) -or $versionedEdge.Count -gt 0) {
+                    throw 'Microsoft Edge pašalinimo patikra vis dar aptiko msedge.exe.'
+                }
+                Write-SetupLog 'Patikrinta: Edge naršyklė pašalinta, jos diegimas ir naujinimai užblokuoti; WebView2 ir jo naujinimai palikti.'
                 return
             }
 
@@ -338,9 +405,9 @@ function Remove-BundledApps {
             $remainingInstalled = @(Get-AppxPackage -AllUsers -Name $item.Package -ErrorAction SilentlyContinue)
             $remainingProvisioned = @(Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -eq $item.Package })
             if ($remainingInstalled.Count -gt 0 -or $remainingProvisioned.Count -gt 0) {
-                throw "App-removal read-back verification still found $($item.Package)."
+                throw "Programėlės pašalinimo patikra vis dar aptiko $($item.Package)."
             }
-            Write-SetupLog "Verified removed or absent: $($item.Package)."
+            Write-SetupLog "Patikrinta, kad pašalinta arba nebuvo įdiegta: $($item.Package)."
         }
     }
 }
@@ -348,10 +415,10 @@ function Remove-BundledApps {
 function Set-TaskbarAutoHide {
     $path = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StuckRects3'
     $settings = [byte[]](Get-ItemPropertyValue -LiteralPath $path -Name 'Settings' -ErrorAction Stop)
-    if ($settings.Length -lt 9) { throw 'The taskbar settings value has an unexpected format.' }
+    if ($settings.Length -lt 9) { throw 'Užduočių juostos nustatymo reikšmės formatas neatpažintas.' }
     $settings[8] = 3
     Set-RegistryValue $path 'Settings' $settings 'Binary'
-    Write-SetupLog 'Taskbar auto-hide will fully apply after Explorer restarts or the next sign-in.' 'WARN'
+    Write-SetupLog 'Automatinis užduočių juostos slėpimas visiškai įsigalios iš naujo paleidus Explorer arba kitą kartą prisijungus.' 'WARN'
 }
 
 function Set-LithuaniaRegion {
@@ -359,27 +426,31 @@ function Set-LithuaniaRegion {
     Set-WinHomeLocation -GeoId 140
     Set-WinSystemLocale -SystemLocale 'lt-LT'
     Set-TimeZone -Id 'FLE Standard Time'
-    if ((Get-TimeZone).Id -ne 'FLE Standard Time') { throw 'Time-zone read-back verification failed.' }
-    if ((Get-WinSystemLocale).Name -ne 'lt-LT') { throw 'System-locale read-back verification failed.' }
-    if ((Get-WinHomeLocation).GeoId -ne 140) { throw 'Home-location read-back verification failed.' }
-    if ((Get-Culture).Name -ne 'lt-LT') { throw 'Regional-format read-back verification failed.' }
-    Write-SetupLog 'Verified Lithuanian home location, system locale, and FLE Standard Time.'
-    Write-SetupLog 'Lithuanian system-locale changes may require signing out or restarting.' 'WARN'
+    if ((Get-TimeZone).Id -ne 'FLE Standard Time') { throw 'Nepavyko patikrinti laiko juostos.' }
+    if ((Get-WinSystemLocale).Name -ne 'lt-LT') { throw 'Nepavyko patikrinti sistemos lokalės.' }
+    if ((Get-WinHomeLocation).GeoId -ne 140) { throw 'Nepavyko patikrinti namų regiono.' }
+    if ((Get-Culture).Name -ne 'lt-LT') { throw 'Nepavyko patikrinti regioninio formato.' }
+    Write-SetupLog 'Patikrintas Lietuvos regionas, lietuviška sistemos lokalė ir Vilniaus laiko juosta.'
+    Write-SetupLog 'Kai kuriems lietuviškos lokalės pakeitimams gali reikėti atsijungti arba paleisti Windows iš naujo.' 'WARN'
 }
 
 function Set-ConnectedNetworksPrivate {
     $profiles = @(Get-NetConnectionProfile -ErrorAction Stop | Where-Object { $_.IPv4Connectivity -ne 'Disconnected' -or $_.IPv6Connectivity -ne 'Disconnected' })
-    if ($profiles.Count -eq 0) { throw 'No connected network profile was found.' }
+    if ($profiles.Count -eq 0) { throw 'Nerastas nė vienas prijungtas tinklo profilis.' }
     foreach ($profile in $profiles) {
         Set-NetConnectionProfile -InterfaceIndex $profile.InterfaceIndex -NetworkCategory Private -ErrorAction Stop
     }
     $remaining = @(Get-NetConnectionProfile -ErrorAction Stop | Where-Object { ($_.IPv4Connectivity -ne 'Disconnected' -or $_.IPv6Connectivity -ne 'Disconnected') -and $_.NetworkCategory -ne 'Private' })
-    if ($remaining.Count -gt 0) { throw 'Network-category read-back verification found a connected profile that is not Private.' }
-    Write-SetupLog 'Verified: every connected network profile is Private.'
+    if ($remaining.Count -gt 0) { throw 'Tinklo kategorijos patikra aptiko prijungtą profilį, kuris nėra privatus.' }
+    Write-SetupLog 'Patikrinta: visi prijungti tinklo profiliai yra privatūs.'
 }
 
 function Set-WindowsOption {
     param([Parameter(Mandatory)][string]$Key)
+    if ($Key -in @($PrivacyCatalog.Key)) {
+        Set-PrivacyOption -Key $Key
+        return
+    }
     switch ($Key) {
         'TaskbarLeft' { Set-RegistryValue 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' 'TaskbarAl' 0 }
         'HideSearch' { Set-RegistryValue 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Search' 'SearchboxTaskbarMode' 0 }
@@ -458,7 +529,7 @@ function Set-WindowsOption {
         }
         'TaskbarAutoHide' { Set-TaskbarAutoHide }
         'LithuaniaRegion' { Set-LithuaniaRegion }
-        default { throw "Unknown Windows setting: $Key" }
+        default { throw "Neatpažintas Windows nustatymas: $Key" }
     }
 }
 
@@ -507,16 +578,41 @@ function Add-TabWithList {
     [void]$Tabs.TabPages.Add($tab)
 }
 
+$darkBackground = [Drawing.Color]::FromArgb(30, 30, 30)
+$darkPanel = [Drawing.Color]::FromArgb(38, 38, 38)
+$darkInput = [Drawing.Color]::FromArgb(24, 24, 24)
+$darkButton = [Drawing.Color]::FromArgb(55, 55, 55)
+$lightText = [Drawing.Color]::FromArgb(235, 235, 235)
+$mutedText = [Drawing.Color]::FromArgb(180, 180, 180)
+
+function Set-DarkControl {
+    param([System.Windows.Forms.Control]$Control)
+    $Control.ForeColor = $lightText
+    if ($Control -is [System.Windows.Forms.Form] -or $Control -is [System.Windows.Forms.TabPage]) {
+        $Control.BackColor = $darkBackground
+    } elseif ($Control -is [System.Windows.Forms.CheckedListBox] -or $Control -is [System.Windows.Forms.RichTextBox]) {
+        $Control.BackColor = $darkInput
+        $Control.BorderStyle = 'FixedSingle'
+    } elseif ($Control -is [System.Windows.Forms.Button]) {
+        $Control.BackColor = $darkButton
+        $Control.FlatStyle = 'Flat'
+        $Control.FlatAppearance.BorderColor = [Drawing.Color]::FromArgb(85, 85, 85)
+    } else {
+        $Control.BackColor = $darkPanel
+    }
+    foreach ($child in $Control.Controls) { Set-DarkControl $child }
+}
+
 $form = [System.Windows.Forms.Form]::new()
-$form.Text = "$AppName v$AppVersion"
+$form.Text = $AppName
 $form.StartPosition = 'CenterScreen'
-$form.Size = [Drawing.Size]::new(900, 700)
-$form.MinimumSize = [Drawing.Size]::new(760, 580)
-$form.Font = [Drawing.Font]::new('Segoe UI', 9)
+$form.Size = [Drawing.Size]::new(1000, 780)
+$form.MinimumSize = [Drawing.Size]::new(820, 640)
+$form.Font = [Drawing.Font]::new('Segoe UI', 10.5)
 
 $root = [System.Windows.Forms.TableLayoutPanel]::new()
 $root.Dock = 'Fill'
-$root.Padding = [System.Windows.Forms.Padding]::new(12)
+$root.Padding = [System.Windows.Forms.Padding]::new(14)
 $root.ColumnCount = 1
 $root.RowCount = 4
 [void]$root.RowStyles.Add([System.Windows.Forms.RowStyle]::new('AutoSize'))
@@ -527,63 +623,88 @@ $form.Controls.Add($root)
 
 $heading = [System.Windows.Forms.Label]::new()
 $heading.AutoSize = $true
-$heading.Font = [Drawing.Font]::new('Segoe UI Semibold', 14)
-$heading.Text = "$AppName  v$AppVersion"
-$heading.Padding = [System.Windows.Forms.Padding]::new(0, 0, 0, 8)
+$heading.Font = [Drawing.Font]::new('Segoe UI Semibold', 16)
+$heading.Text = $AppName
+$heading.Padding = [System.Windows.Forms.Padding]::new(0, 0, 0, 10)
 $root.Controls.Add($heading, 0, 0)
 
 $tabs = [System.Windows.Forms.TabControl]::new()
 $tabs.Dock = 'Fill'
+$tabs.DrawMode = 'OwnerDrawFixed'
+$tabs.ItemSize = [Drawing.Size]::new(150, 34)
+$tabs.SizeMode = 'Fixed'
+$tabs.Add_DrawItem({
+    param($sender, $eventArgs)
+    $selected = ($eventArgs.Index -eq $sender.SelectedIndex)
+    $background = if ($selected) { [Drawing.Color]::FromArgb(60, 60, 60) } else { $darkPanel }
+    $eventArgs.Graphics.FillRectangle([Drawing.SolidBrush]::new($background), $eventArgs.Bounds)
+    $text = $sender.TabPages[$eventArgs.Index].Text
+    [System.Windows.Forms.TextRenderer]::DrawText($eventArgs.Graphics, $text, $form.Font, $eventArgs.Bounds, $lightText, 'HorizontalCenter,VerticalCenter')
+})
 $root.Controls.Add($tabs, 0, 1)
 
 $programList = New-CatalogList -Catalog $ProgramCatalog
-Add-TabWithList -Tabs $tabs -Title 'Programs' -List $programList -Description 'Install exact WinGet packages. Hardware-dependent entries open their verified publisher pages instead of guessing a driver.'
+$programList.Font = [Drawing.Font]::new('Segoe UI Emoji', 10.5)
+Add-TabWithList -Tabs $tabs -Title 'Programos' -List $programList -Description 'Pažymėtos programos diegiamos naudojant tikslius WinGet paketų ID. Įrangai priklausantys įrašai atveria oficialų gamintojo puslapį.'
+
 $extensionList = New-CatalogList -Catalog $VivaldiExtensionCatalog
-Add-TabWithList -Tabs $tabs -Title 'Vivaldi extensions' -List $extensionList -Description 'Deploy selected Chrome Web Store extensions through a Vivaldi managed policy. This remains experimental until verified on the target Vivaldi version.'
-$privacyList = New-CatalogList -Catalog $PrivacyCatalog
-Add-TabWithList -Tabs $tabs -Title 'Privacy' -List $privacyList -Description 'Reduce data collection and promotional content without disabling Windows Update, Defender, or the Store.'
+Add-TabWithList -Tabs $tabs -Title 'Vivaldi plėtiniai' -List $extensionList -Description 'Pažymėti Chrome Web Store plėtiniai pridedami per Vivaldi valdomą registro politiką. Po paleidimo patikrinkite, ar plėtiniai atsirado.'
+
 $appsList = New-CatalogList -Catalog $BundledAppCatalog
-Add-TabWithList -Tabs $tabs -Title 'Bundled apps' -List $appsList -Description 'Remove selected optional inbox apps for existing users and from provisioning for future users. Core Windows components are excluded.'
-$settingsTab = [System.Windows.Forms.TabPage]::new('Windows settings')
-$settingsLayout = [System.Windows.Forms.TableLayoutPanel]::new()
-$settingsLayout.Dock = 'Fill'
-$settingsLayout.Padding = [System.Windows.Forms.Padding]::new(8)
-$settingsLayout.ColumnCount = 1
-$settingsLayout.RowCount = 2
-[void]$settingsLayout.RowStyles.Add([System.Windows.Forms.RowStyle]::new('AutoSize'))
-[void]$settingsLayout.RowStyles.Add([System.Windows.Forms.RowStyle]::new('Percent', 100))
-$settingsDescription = [System.Windows.Forms.Label]::new()
-$settingsDescription.AutoSize = $true
-$settingsDescription.Text = 'Settings are grouped by purpose. Every write is read back and verified before it is reported as successful.'
-$settingsDescription.Padding = [System.Windows.Forms.Padding]::new(0, 0, 0, 8)
-$settingsTabs = [System.Windows.Forms.TabControl]::new()
-$settingsTabs.Dock = 'Fill'
+Add-TabWithList -Tabs $tabs -Title 'Integruotos programėlės' -List $appsList -Description 'Pašalinamos tik pažymėtos programėlės. WebView2, Microsoft Store, WinGet ir sisteminės bibliotekos nešalinamos.'
+
+$settingsTab = [System.Windows.Forms.TabPage]::new('Windows nustatymai')
+$settingsFlow = [System.Windows.Forms.FlowLayoutPanel]::new()
+$settingsFlow.Dock = 'Fill'
+$settingsFlow.AutoScroll = $true
+$settingsFlow.FlowDirection = 'TopDown'
+$settingsFlow.WrapContents = $false
+$settingsFlow.Padding = [System.Windows.Forms.Padding]::new(12)
 $settingsLists = [System.Collections.ArrayList]::new()
 foreach ($groupName in $WindowsSettingsGroups.Keys) {
-    $groupList = New-CatalogList -Catalog @($WindowsSettingsGroups[$groupName])
+    $groupItems = @($WindowsSettingsGroups[$groupName])
+    $groupContainer = [System.Windows.Forms.Panel]::new()
+    $groupContainer.Width = 900
+    $groupContainer.Height = 42 + (30 * $groupItems.Count)
+    $groupContainer.Margin = [System.Windows.Forms.Padding]::new(0, 0, 0, 14)
+
+    $groupTitle = [System.Windows.Forms.Label]::new()
+    $groupTitle.Text = $groupName
+    $groupTitle.Font = [Drawing.Font]::new('Segoe UI Semibold', 11.5)
+    $groupTitle.AutoSize = $true
+    $groupTitle.Location = [Drawing.Point]::new(3, 2)
+
+    $groupList = New-CatalogList -Catalog $groupItems
+    $groupList.Location = [Drawing.Point]::new(0, 30)
+    $groupList.Width = 880
+    $groupList.Height = 8 + (30 * $groupItems.Count)
+    $groupList.Anchor = 'Top,Left,Right'
     [void]$settingsLists.Add($groupList)
-    Add-TabWithList -Tabs $settingsTabs -Title $groupName -List $groupList
+    $groupContainer.Controls.AddRange(@($groupTitle, $groupList))
+    [void]$settingsFlow.Controls.Add($groupContainer)
 }
-$settingsLayout.Controls.Add($settingsDescription, 0, 0)
-$settingsLayout.Controls.Add($settingsTabs, 0, 1)
-$settingsTab.Controls.Add($settingsLayout)
+$settingsFlow.Add_SizeChanged({
+    foreach ($groupControl in $settingsFlow.Controls) {
+        $groupControl.Width = [Math]::Max(500, $settingsFlow.ClientSize.Width - 35)
+    }
+})
+$settingsTab.Controls.Add($settingsFlow)
 [void]$tabs.TabPages.Add($settingsTab)
 
-$logTab = [System.Windows.Forms.TabPage]::new('Log')
-$script:LogBox = [System.Windows.Forms.TextBox]::new()
+$logTab = [System.Windows.Forms.TabPage]::new('Žurnalas')
+$script:LogBox = [System.Windows.Forms.RichTextBox]::new()
 $script:LogBox.Dock = 'Fill'
-$script:LogBox.Multiline = $true
 $script:LogBox.ReadOnly = $true
-$script:LogBox.ScrollBars = 'Both'
 $script:LogBox.WordWrap = $false
-$script:LogBox.Font = [Drawing.Font]::new('Consolas', 9)
+$script:LogBox.Font = [Drawing.Font]::new('Consolas', 10)
 $logTab.Controls.Add($script:LogBox)
 [void]$tabs.TabPages.Add($logTab)
 
 $authorLabel = [System.Windows.Forms.Label]::new()
 $authorLabel.AutoSize = $true
-$authorLabel.Text = "Made by $AppAuthor"
-$authorLabel.Padding = [System.Windows.Forms.Padding]::new(0, 7, 0, 4)
+$authorLabel.Text = "By $AppAuthor  •  v$AppVersion"
+$authorLabel.ForeColor = $mutedText
+$authorLabel.Padding = [System.Windows.Forms.Padding]::new(0, 8, 0, 5)
 $root.Controls.Add($authorLabel, 0, 2)
 
 $buttonPanel = [System.Windows.Forms.FlowLayoutPanel]::new()
@@ -591,55 +712,57 @@ $buttonPanel.AutoSize = $true
 $buttonPanel.Dock = 'Fill'
 $buttonPanel.FlowDirection = 'RightToLeft'
 $runButton = [System.Windows.Forms.Button]::new()
-$runButton.Text = 'RUN SETUP'
+$runButton.Text = 'VYKDYTI NUSTATYMĄ'
 $runButton.AutoSize = $true
-$runButton.Padding = [System.Windows.Forms.Padding]::new(18, 6, 18, 6)
+$runButton.Padding = [System.Windows.Forms.Padding]::new(20, 7, 20, 7)
 $openLogButton = [System.Windows.Forms.Button]::new()
-$openLogButton.Text = 'Open log'
+$openLogButton.Text = 'Atverti žurnalą'
 $openLogButton.AutoSize = $true
-$openLogButton.Padding = [System.Windows.Forms.Padding]::new(8, 6, 8, 6)
+$openLogButton.Padding = [System.Windows.Forms.Padding]::new(10, 7, 10, 7)
 $buttonPanel.Controls.AddRange(@($runButton, $openLogButton))
 $root.Controls.Add($buttonPanel, 0, 3)
+
+Set-DarkControl $form
+$authorLabel.ForeColor = $mutedText
+$script:LogBox.BackColor = $darkInput
+$tabs.BackColor = $darkBackground
 
 $openLogButton.Add_Click({
     if (Test-Path -LiteralPath $script:LogPath) { Start-Process -FilePath 'notepad.exe' -ArgumentList @($script:LogPath) }
 })
 
 $runButton.Add_Click({
-    $answer = [System.Windows.Forms.MessageBox]::Show('Apply every checked option now? Some changes require signing out or restarting.', 'Confirm Fresh Windows Setup', 'YesNo', 'Warning')
+    $answer = [System.Windows.Forms.MessageBox]::Show('Ar dabar pritaikyti visas pažymėtas parinktis? Kai kuriems pakeitimams reikės atsijungti arba paleisti Windows iš naujo.', 'Patvirtinkite vykdymą', 'YesNo', 'Warning')
     if ($answer -ne [System.Windows.Forms.DialogResult]::Yes) { return }
     $runButton.Enabled = $false
     $tabs.SelectedTab = $logTab
     try {
-        Write-SetupLog "$AppName v$AppVersion started. Log file: $script:LogPath"
+        Write-SetupLog "$AppName v$AppVersion pradėta. Žurnalo failas: $script:LogPath"
         try { Install-Programs -Items @(Get-CheckedCatalogItems $programList) }
-        catch { Write-SetupLog "Programs category failed: $($_.Exception.Message)" 'ERROR' }
+        catch { Write-SetupLog "Programų diegimo dalies klaida: $($_.Exception.Message)" 'ERROR' }
         try { Configure-VivaldiExtensions -Items @(Get-CheckedCatalogItems $extensionList) }
-        catch { Write-SetupLog "Vivaldi extensions category failed: $($_.Exception.Message)" 'ERROR' }
-        foreach ($item in @(Get-CheckedCatalogItems $privacyList)) {
-            Invoke-LoggedAction -Description $item.Name -Action { Set-PrivacyOption -Key $item.Key }
-        }
+        catch { Write-SetupLog "Vivaldi plėtinių dalies klaida: $($_.Exception.Message)" 'ERROR' }
         Remove-BundledApps -Items @(Get-CheckedCatalogItems $appsList)
         foreach ($settingsList in $settingsLists) {
             foreach ($item in @(Get-CheckedCatalogItems $settingsList)) {
                 Invoke-LoggedAction -Description $item.Name -Action { Set-WindowsOption -Key $item.Key }
             }
         }
-        Write-SetupLog 'Setup finished. Review warnings and errors, then restart Windows.' 'OK'
-        [void][System.Windows.Forms.MessageBox]::Show('Setup finished. Review the log and restart Windows.', $AppName, 'OK', 'Information')
+        Write-SetupLog 'Vykdymas baigtas. Peržiūrėkite įspėjimus bei klaidas ir paleiskite Windows iš naujo.' 'OK'
+        [void][System.Windows.Forms.MessageBox]::Show('Vykdymas baigtas. Peržiūrėkite žurnalą ir paleiskite Windows iš naujo.', $AppName, 'OK', 'Information')
     } catch {
-        Write-SetupLog "Unexpected failure: $($_.Exception.Message)" 'ERROR'
-        [void][System.Windows.Forms.MessageBox]::Show($_.Exception.Message, 'Setup stopped', 'OK', 'Error')
+        Write-SetupLog "Netikėta klaida: $($_.Exception.Message)" 'ERROR'
+        [void][System.Windows.Forms.MessageBox]::Show($_.Exception.Message, 'Vykdymas sustabdytas', 'OK', 'Error')
     } finally {
         $runButton.Enabled = $true
     }
 })
 
 if ($ValidateOnly) {
-    Write-Output "$AppName v$AppVersion validation load completed."
+    Write-Output "$AppName v$AppVersion patikros įkėlimas baigtas."
     exit 0
 }
 
-Write-SetupLog 'Ready. No changes have been made.'
+Write-SetupLog 'Paruošta. Pakeitimų dar neatlikta.'
 [void]$form.ShowDialog()
 
