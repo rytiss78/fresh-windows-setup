@@ -1,0 +1,5 @@
+
+# Build artifacts
+*.exe.config
+_build_*.ps1
+_build_*.cs
