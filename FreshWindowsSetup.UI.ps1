@@ -769,9 +769,12 @@ $tabs.Add_DrawItem({
     }
 
     $text = $sender.TabPages[$eventArgs.Index].Text
-    $brush = if ($selected) { [Drawing.SolidBrush]::new($lightText) } else { [Drawing.SolidBrush]::new($mutedText) }
-    [System.Windows.Forms.TextRenderer]::DrawText($eventArgs.Graphics, $text, $form.Font, $eventArgs.Bounds, $brush, 'HorizontalCenter,VerticalCenter')
-    $background.Dispose(); $brush.Dispose()
+    if ($selected) {
+        [System.Windows.Forms.TextRenderer]::DrawText($eventArgs.Graphics, $text, $form.Font, $eventArgs.Bounds, $lightText, $darkPanel)
+    } else {
+        [System.Windows.Forms.TextRenderer]::DrawText($eventArgs.Graphics, $text, $form.Font, $eventArgs.Bounds, $mutedText, $darkPanel)
+    }
+    $background.Dispose()
 })
 $root.Controls.Add($tabs, 0, 1)
 
