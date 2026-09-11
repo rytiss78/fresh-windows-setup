@@ -19,7 +19,7 @@ param(
 Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
 $AppName = 'Fresh Windows Setup'
-$AppVersion = '1.3.0-UI'
+$AppVersion = '1.3.0'
 $AppAuthor = 'Emocinis Taikinys'
 
 $ProgramCatalog = @(
@@ -673,18 +673,12 @@ function Add-TabWithList {
     [void]$Tabs.TabPages.Add($tab)
 }
 
-$darkBackground = [Drawing.Color]::FromArgb(24, 24, 27)
-$darkPanel = [Drawing.Color]::FromArgb(33, 33, 33)
-$darkInput = [Drawing.Color]::FromArgb(18, 18, 18)
-$darkButton = [Drawing.Color]::FromArgb(50, 50, 50)
-$accentColor = [Drawing.Color]::FromArgb(0, 120, 215)
-$accentHover = [Drawing.Color]::FromArgb(0, 90, 180)
+$darkBackground = [Drawing.Color]::FromArgb(30, 30, 30)
+$darkPanel = [Drawing.Color]::FromArgb(38, 38, 38)
+$darkInput = [Drawing.Color]::FromArgb(24, 24, 24)
+$darkButton = [Drawing.Color]::FromArgb(55, 55, 55)
 $lightText = [Drawing.Color]::FromArgb(235, 235, 235)
-$mutedText = [Drawing.Color]::FromArgb(150, 150, 150)
-$successColor = [Drawing.Color]::FromArgb(102, 217, 161)
-$warnColor = [Drawing.Color]::FromArgb(250, 196, 86)
-$errorColor = [Drawing.Color]::FromArgb(248, 119, 131)
-$infoColor = [Drawing.Color]::FromArgb(137, 180, 250)
+$mutedText = [Drawing.Color]::FromArgb(180, 180, 180)
 
 function Set-DarkControl {
     param([System.Windows.Forms.Control]$Control)
@@ -698,84 +692,39 @@ function Set-DarkControl {
         $Control.BackColor = $darkButton
         $Control.FlatStyle = 'Flat'
         $Control.FlatAppearance.BorderColor = [Drawing.Color]::FromArgb(85, 85, 85)
-        $Control.Font = [Drawing.Font]::new('Segoe UI', 10, [Drawing.FontStyle]::Bold)
-    } elseif ($Control -is [System.Windows.Forms.Label]) {
-        if ($Control.Font.Bold) {
-            $Control.ForeColor = $lightText
-        } else {
-            $Control.ForeColor = $mutedText
-        }
-    } elseif ($Control -is [System.Windows.Forms.Panel] -or $Control -is [System.Windows.Forms.FlowLayoutPanel] -or $Control -is [System.Windows.Forms.TableLayoutPanel]) {
-        $Control.BackColor = $darkBackground
+    } else {
+        $Control.BackColor = $darkPanel
     }
     foreach ($child in $Control.Controls) { Set-DarkControl $child }
 }
 
 $form = [System.Windows.Forms.Form]::new()
-$form.Text = '🪟 Fresh Windows Setup'
+$form.Text = 'Fresh Windows Setup'
 $form.StartPosition = 'CenterScreen'
-$form.Size = [Drawing.Size]::new(1100, 850)
-$form.MinimumSize = [Drawing.Size]::new(900, 700)
+$form.Size = [Drawing.Size]::new(950, 780)
+$form.MinimumSize = [Drawing.Size]::new(820, 640)
 $form.Font = [Drawing.Font]::new('Segoe UI', 10.5)
-$form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
-$form.MaximizeBox = $false
 
 $root = [System.Windows.Forms.TableLayoutPanel]::new()
 $root.Dock = 'Fill'
-$root.Padding = [System.Windows.Forms.Padding]::new(16)
+$root.Padding = [System.Windows.Forms.Padding]::new(14)
 $root.ColumnCount = 1
-$root.RowCount = 5
+$root.RowCount = 4
 [void]$root.RowStyles.Add([System.Windows.Forms.RowStyle]::new('AutoSize'))
 [void]$root.RowStyles.Add([System.Windows.Forms.RowStyle]::new('Percent', 100))
-[void]$root.RowStyles.Add([System.Windows.Forms.RowStyle]::new('AutoSize'))
 [void]$root.RowStyles.Add([System.Windows.Forms.RowStyle]::new('AutoSize'))
 [void]$root.RowStyles.Add([System.Windows.Forms.RowStyle]::new('AutoSize'))
 $form.Controls.Add($root)
 
 $heading = [System.Windows.Forms.Label]::new()
 $heading.AutoSize = $true
-$heading.Font = [Drawing.Font]::new('Segoe UI Semibold', 18)
-$heading.Text = '🪟 Fresh Windows Setup'
-$heading.Padding = [System.Windows.Forms.Padding]::new(0, 0, 0, 6)
+$heading.Font = [Drawing.Font]::new('Segoe UI Semibold', 16)
+$heading.Text = $AppName
+$heading.Padding = [System.Windows.Forms.Padding]::new(0, 0, 0, 10)
 $root.Controls.Add($heading, 0, 0)
-
-$subHeading = [System.Windows.Forms.Label]::new()
-$subHeading.AutoSize = $true
-$subHeading.Font = [Drawing.Font]::new('Segoe UI', 9.5)
-$subHeading.Text = "Pirmojo paleidimo konfigūracijos įrankis  •  v$AppVersion"
-$subHeading.ForeColor = $mutedText
-$subHeading.Padding = [System.Windows.Forms.Padding]::new(0, 0, 0, 14)
-$root.Controls.Add($subHeading, 0, 1)
 
 $tabs = [System.Windows.Forms.TabControl]::new()
 $tabs.Dock = 'Fill'
-$tabs.DrawMode = 'OwnerDrawFixed'
-$tabs.ItemSize = [Drawing.Size]::new(160, 38)
-$tabs.SizeMode = 'Fixed'
-$tabs.Add_DrawItem({
-    param($sender, $eventArgs)
-    $selected = ($eventArgs.Index -eq $sender.SelectedIndex)
-    if ($selected) {
-        $background = [Drawing.SolidBrush]::new([Drawing.Color]::FromArgb(40, 40, 45))
-    } else {
-        $background = [Drawing.SolidBrush]::new($darkPanel)
-    }
-    $eventArgs.Graphics.FillRectangle($background, $eventArgs.Bounds)
-
-    # Draw accent line under selected tab
-    if ($selected) {
-        $pen = [Drawing.Pen]::new($accentColor, 2.0)
-        [void]$eventArgs.Graphics.DrawLine($pen, 12, $eventArgs.Bounds.Height - 3, $eventArgs.Bounds.Width - 12, $eventArgs.Bounds.Height - 3)
-    }
-
-    $text = $sender.TabPages[$eventArgs.Index].Text
-    if ($selected) {
-        [System.Windows.Forms.TextRenderer]::DrawText($eventArgs.Graphics, $text, $form.Font, $eventArgs.Bounds, $lightText, $darkPanel)
-    } else {
-        [System.Windows.Forms.TextRenderer]::DrawText($eventArgs.Graphics, $text, $form.Font, $eventArgs.Bounds, $mutedText, $darkPanel)
-    }
-    $background.Dispose()
-})
 $root.Controls.Add($tabs, 0, 1)
 
 $programList = New-CatalogList -Catalog $ProgramCatalog
@@ -842,43 +791,20 @@ $authorLabel.ForeColor = $mutedText
 $authorLabel.Padding = [System.Windows.Forms.Padding]::new(0, 8, 0, 5)
 $root.Controls.Add($authorLabel, 0, 2)
 
-# Progress bar
-$script:ProgressBar = [System.Windows.Forms.ProgressBar]::new()
-$script:ProgressBar.Dock = 'Fill'
-$script:ProgressBar.Style = [System.Windows.Forms.ProgressBarStyle]::Continuous
-$script:ProgressBar.Minimum = 0
-$script:ProgressBar.Maximum = 100
-$script:ProgressBar.Value = 0
-$script:ProgressBar.Margin = [System.Windows.Forms.Padding]::new(0, 4, 0, 6)
-$root.Controls.Add($script:ProgressBar, 0, 3)
-
-$statusLabel = [System.Windows.Forms.Label]::new()
-$statusLabel.AutoSize = $true
-$statusLabel.Text = 'Pasirinkite parinktis ir spauskite VYKDYTI'
-$statusLabel.ForeColor = $mutedText
-$statusLabel.Font = [Drawing.Font]::new('Segoe UI', 9)
-$statusLabel.Padding = [System.Windows.Forms.Padding]::new(0, 2, 0, 4)
-$root.Controls.Add($statusLabel, 0, 4)
-
 $buttonPanel = [System.Windows.Forms.FlowLayoutPanel]::new()
 $buttonPanel.AutoSize = $true
 $buttonPanel.Dock = 'Fill'
 $buttonPanel.FlowDirection = 'RightToLeft'
 $runButton = [System.Windows.Forms.Button]::new()
-$runButton.Text = '▶ VYKDYTI'
-$runButton.Font = [Drawing.Font]::new('Segoe UI', 10.5, [Drawing.FontStyle]::Bold)
-$runButton.ForeColor = $lightText
-$runButton.BackColor = $accentColor
-$runButton.FlatAppearance.BorderColor = $accentHover
-$runButton.FlatAppearance.MouseOverBackColor = $accentHover
+$runButton.Text = 'VYKDYTI NUSTATYMĄ'
 $runButton.AutoSize = $true
-$runButton.Padding = [System.Windows.Forms.Padding]::new(24, 10, 24, 10)
+$runButton.Padding = [System.Windows.Forms.Padding]::new(20, 7, 20, 7)
 $openLogButton = [System.Windows.Forms.Button]::new()
-$openLogButton.Text = '📋 Atverti žurnalą'
+$openLogButton.Text = 'Atverti žurnalą'
 $openLogButton.AutoSize = $true
-$openLogButton.Padding = [System.Windows.Forms.Padding]::new(14, 8, 14, 8)
+$openLogButton.Padding = [System.Windows.Forms.Padding]::new(10, 7, 10, 7)
 $buttonPanel.Controls.AddRange(@($runButton, $openLogButton))
-$root.Controls.Add($buttonPanel, 0, 5)
+$root.Controls.Add($buttonPanel, 0, 3)
 
 Set-DarkControl $form
 $authorLabel.ForeColor = $mutedText
@@ -914,21 +840,25 @@ $runButton.Add_Click({
         try {
             $json = [System.IO.File]::ReadAllText($ImportConfig, [System.Text.Encoding]::UTF8)
             $config = $json | ConvertFrom-Json
+            # Restore program selections
             foreach ($id in $config.Programos) {
                 for ($i = 0; $i -lt $programList.Items.Count; $i++) {
                     if ([string]$programList.Items[$i].Id -eq $id) { $programList.SetItemChecked($i, $true) }
                 }
             }
+            # Restore extension selections
             foreach ($id in $config.VivaldiPlėtiniai) {
                 for ($i = 0; $i -lt $extensionList.Items.Count; $i++) {
                     if ([string]$extensionList.Items[$i].Id -eq $id) { $extensionList.SetItemChecked($i, $true) }
                 }
             }
+            # Restore app removal selections
             foreach ($pkg in $config.IntegruotosProgramėlės) {
                 for ($i = 0; $i -lt $appsList.Items.Count; $i++) {
                     if ([string]$appsList.Items[$i].Package -eq $pkg) { $appsList.SetItemChecked($i, $true) }
                 }
             }
+            # Restore settings selections
             foreach ($key in $config.Nustatymai.Keys) {
                 foreach ($list in $settingsLists) {
                     for ($i = 0; $i -lt $list.Items.Count; $i++) {
@@ -964,62 +894,24 @@ $runButton.Add_Click({
     if ($answer -ne [System.Windows.Forms.DialogResult]::Yes) { return }
     $runButton.Enabled = $false
     $tabs.SelectedTab = $logTab
-
-    # Count total tasks for progress
-    $totalTasks = 0
-    foreach ($item in (Get-CheckedCatalogItems $programList)) { if (-not ($DryRun)) { $totalTasks++ } }
-    foreach ($item in (Get-CheckedCatalogItems $extensionList)) { $totalTasks++ }
-    foreach ($item in (Get-CheckedCatalogItems $appsList)) { $totalTasks++ }
-    foreach ($list in $settingsLists) { foreach ($item in (Get-CheckedCatalogItems $list)) { $totalTasks++ } }
-    if ($totalTasks -eq 0) { $totalTasks = 1 }
-
-    $taskNum = 0
     try {
-        Write-SetupLog "$AppName v$AppVersion pradėta. Žurnalo failas: $script:LogPath" 'OK'
-        $statusLabel.Text = 'Vykdoma...'
-        $statusLabel.ForeColor = $infoColor
-
-        # Install programs
-        $checkedPrograms = @(Get-CheckedCatalogItems $programList)
-        if ($checkedPrograms.Count -gt 0) {
-            Write-SetupLog "Diegiamos $($checkedPrograms.Count) programos..." 'INFO'
-            try {
-                Install-Programs -Items $checkedPrograms
-            } catch { Write-SetupLog "Programų diegimo dalies klaida: $($_.Exception.Message)" 'ERROR' }
-        }
-
-        # Configure extensions
-        $checkedExtensions = @(Get-CheckedCatalogItems $extensionList)
-        if ($checkedExtensions.Count -gt 0) {
-            try { Configure-VivaldiExtensions -Items $checkedExtensions }
-            catch { Write-SetupLog "Vivaldi plėtinių dalies klaida: $($_.Exception.Message)" 'ERROR' }
-        }
-
-        # Remove bundled apps
-        $checkedApps = @(Get-CheckedCatalogItems $appsList)
-        if ($checkedApps.Count -gt 0) {
-            Write-SetupLog "Šalinamos $($checkedApps.Count) integruotos programėlės..." 'INFO'
-            try { Remove-BundledApps -Items $checkedApps }
-            catch { Write-SetupLog "Programėlių šalinimo dalies klaida: $($_.Exception.Message)" 'ERROR' }
-        }
-
-        # Apply settings
+        Write-SetupLog "$AppName v$AppVersion pradėta. Žurnalo failas: $script:LogPath"
+        try { Install-Programs -Items @(Get-CheckedCatalogItems $programList) }
+        catch { Write-SetupLog "Programų diegimo dalies klaida: $($_.Exception.Message)" 'ERROR' }
+        try { Configure-VivaldiExtensions -Items @(Get-CheckedCatalogItems $extensionList) }
+        catch { Write-SetupLog "Vivaldi plėtinių dalies klaida: $($_.Exception.Message)" 'ERROR' }
+        Remove-BundledApps -Items @(Get-CheckedCatalogItems $appsList)
         foreach ($settingsList in $settingsLists) {
             foreach ($item in @(Get-CheckedCatalogItems $settingsList)) {
                 Invoke-LoggedAction -Description $item.Name -Action { Set-WindowsOption -Key $item.Key }
             }
         }
-
-        $statusLabel.Text = '✅ Vykdymas baigtas sėkmingai'
-        $statusLabel.ForeColor = $successColor
+        Write-SetupLog 'Vykdymas baigtas. Peržiūrėkite įspėjimus bei klaidas ir paleiskite Windows iš naujo.' 'OK'
         [void][System.Windows.Forms.MessageBox]::Show('Vykdymas baigtas. Peržiūrėkite žurnalą ir paleiskite Windows iš naujo.', $AppName, 'OK', 'Information')
     } catch {
         Write-SetupLog "Netikėta klaida: $($_.Exception.Message)" 'ERROR'
-        $statusLabel.Text = '❌ Klaida — peržiūrėkite žurnalą'
-        $statusLabel.ForeColor = $errorColor
         [void][System.Windows.Forms.MessageBox]::Show($_.Exception.Message, 'Vykdymas sustabdytas', 'OK', 'Error')
     } finally {
-        $script:ProgressBar.Value = 100
         $runButton.Enabled = $true
     }
 })

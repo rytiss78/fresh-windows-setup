@@ -19,7 +19,7 @@ param(
 Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
 $AppName = 'Fresh Windows Setup'
-$AppVersion = '1.2.0'
+$AppVersion = '1.3.0'
 $AppAuthor = 'Emocinis Taikinys'
 
 $ProgramCatalog = @(
@@ -222,7 +222,8 @@ function Invoke-LoggedAction {
         & $Action
     Write-SetupLog "$Description – atlikta." 'OK'
     } catch {
-        Write-SetupLog "$Description – nepavyko: $($_.Exception.Message)" 'ERROR'
+        $errorMsg = if ($_.Exception.Message) { $_.Exception.Message } else { 'Nežinoma klaida' }
+        Write-SetupLog "$Description – nepavyko: $errorMsg" 'ERROR'
     }
 }
 
@@ -285,21 +286,20 @@ function Install-Programs {
 
             # Skip if already installed (Item 4)
             $isInstalled = Test-WinGetPackageInstalled -Id $item.Id -Source $item.Source
-            if ($isInstalled) {
-                Write-SetupLog "Paketas $($item.Id) jau įdiegtas. Praleidžiama." 'OK'
-                return
-            }
-
             # Use safe command with retries for transient errors (Item 8)
             $arguments = @('install', '--id', $item.Id, '--exact', '--source', $item.Source, '--silent', '--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity')
-            Invoke-NativeCommandSafe -FilePath $winget.Source -Arguments $arguments
-
-            # Verify installation succeeded
-            $listOutput = @(& $winget.Source list --id $item.Id --exact --source $item.Source --accept-source-agreements --disable-interactivity 2>&1)
-            if ($LASTEXITCODE -ne 0 -or -not (($listOutput -join "`n") -match [regex]::Escape($item.Id))) {
-                Write-SetupLog "WinGet patikra nerado $($item.Id). Paketas gali būti iš dalies įdiegtas." 'WARN'
-            } else {
-                Write-SetupLog "Patikrintas įdiegtas paketas: $($item.Id)." 'OK'
+            try {
+                Invoke-NativeCommandSafe -FilePath $winget.Source -Arguments $arguments
+                # Verify installation succeeded
+                $listOutput = @(& $winget.Source list --id $item.Id --exact --source $item.Source --accept-source-agreements --disable-interactivity 2>&1)
+                if ($LASTEXITCODE -ne 0 -or -not (($listOutput -join "`n") -match [regex]::Escape($item.Id))) {
+                    Write-SetupLog "WinGet patikra nerado $($item.Id). Paketas gali būti iš dalies įdiegtas." 'WARN'
+                } else {
+                    Write-SetupLog "Patikrintas įdiegtas paketas: $($item.Id)." 'OK'
+                }
+            } catch {
+                $errorMsg = if ($null -ne $_.Exception.Message -and $_.Exception.Message.Trim()) { $_.Exception.Message } else { 'Nežinoma klaida.' }
+                Write-SetupLog "WinGet diegimas nepavyko: $errorMsg" 'ERROR'
             }
         }
     }
@@ -416,23 +416,31 @@ function Remove-BundledApps {
             $kind = if ($null -ne $kindProperty) { [string]$kindProperty.Value } else { 'Appx' }
 
             if ($kind -eq 'OneDrive') {
-                $setupCandidates = @(
-                    (Join-Path $env:SystemRoot 'SysWOW64\OneDriveSetup.exe')
-                    (Join-Path $env:SystemRoot 'System32\OneDriveSetup.exe')
-                )
-                $setup = $setupCandidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
-                if ($setup) {
-                    $process = Start-Process -FilePath $setup -ArgumentList @('/uninstall') -Wait -PassThru
-                    if ($process.ExitCode -notin @(0, 19)) { throw "OneDrive šalinimo programa baigė darbą su kodu $($process.ExitCode)." }
+                try {
+                    $setupCandidates = @(
+                        (Join-Path $env:SystemRoot 'SysWOW64\OneDriveSetup.exe')
+                        (Join-Path $env:SystemRoot 'System32\OneDriveSetup.exe')
+                    )
+                    $setup = $setupCandidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+                    if ($setup) {
+                        # Stop OneDrive process first — it blocks uninstall and causes 0x80070005
+                        Get-Process -Name 'OneDrive' -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+                        Start-Sleep -Seconds 2
+                        $process = Start-Process -FilePath $setup -ArgumentList @('/uninstall') -Wait -PassThru -ErrorAction Stop
+                        # Exit code 19 = already uninstalled (expected on fresh systems)
+                        if ($process.ExitCode -notin @(0, 19)) { throw "OneDrive šalinimo programa baigė darbą su kodu $($process.ExitCode)." }
+                    }
+                    $oneDriveExecutables = @(
+                        (Join-Path $env:LOCALAPPDATA 'Microsoft\OneDrive\OneDrive.exe')
+                        (Join-Path $env:ProgramFiles 'Microsoft OneDrive\OneDrive.exe')
+                    )
+                    if ($oneDriveExecutables | Where-Object { Test-Path -LiteralPath $_ }) {
+                        throw 'OneDrive patikra vis dar aptiko įdiegtą vykdomąjį failą.'
+                    }
+                    Write-SetupLog 'Patikrinta: OneDrive vykdomojo failo nėra.'
+                } catch {
+                    Write-SetupLog "OneDrive šalinimas praleistas: $($_.Exception.Message)" 'WARN'
                 }
-                $oneDriveExecutables = @(
-                    (Join-Path $env:LOCALAPPDATA 'Microsoft\OneDrive\OneDrive.exe')
-                    (Join-Path $env:ProgramFiles 'Microsoft OneDrive\OneDrive.exe')
-                )
-                if ($oneDriveExecutables | Where-Object { Test-Path -LiteralPath $_ }) {
-                    throw 'OneDrive patikra vis dar aptiko įdiegtą vykdomąjį failą.'
-                }
-                Write-SetupLog 'Patikrinta: OneDrive vykdomojo failo nėra.'
                 return
             }
 
@@ -468,7 +476,7 @@ function Remove-BundledApps {
                     'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run',
                     'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run'
                 )) {
-                    Remove-RegistryValue $runPath 'MicrosoftEdgeAutoLaunch'
+                    try { Remove-RegistryValue $runPath 'MicrosoftEdgeAutoLaunch' } catch {}
                 }
 
                 foreach ($shortcut in @(
@@ -551,7 +559,7 @@ function Set-WindowsOption {
         'HideSearch' { Set-RegistryValue 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Search' 'SearchboxTaskbarMode' 0 }
         'HideWidgets' {
             Set-RegistryValue 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' 'TaskbarDa' 0
-            Set-RegistryValue 'HKLM:\SOFTWARE\Policies\Microsoft\Dsh' 'AllowNewsAndInterests' 0
+            try { Set-RegistryValue 'HKLM:\SOFTWARE\Policies\Microsoft\Dsh' 'AllowNewsAndInterests' 0 } catch { Write-SetupLog 'Dsh politika nepasiekiama (galbūt reikalingos teisės).' 'WARN' }
         }
         'DisableStartRecommendations' {
             Set-RegistryValue 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' 'Start_IrisRecommendations' 0
