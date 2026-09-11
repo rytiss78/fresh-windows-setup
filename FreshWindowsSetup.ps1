@@ -8,7 +8,13 @@ Made by Emocinis Taikinys
 #>
 
 [CmdletBinding()]
-param([switch]$ValidateOnly)
+param(
+    [switch]$ValidateOnly,
+    [switch]$DryRun,
+    [string]$ExportConfig,
+    [string]$ImportConfig,
+    [switch]$Uninstall
+)
 
 Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
@@ -226,6 +232,44 @@ function Invoke-NativeCommand {
     if ($LASTEXITCODE -ne 0) { throw "$FilePath baigė darbą su kodu $LASTEXITCODE." }
 }
 
+function Invoke-NativeCommandSafe {
+    param(
+        [Parameter(Mandatory)][string]$FilePath,
+        [Parameter(Mandatory)][string[]]$Arguments,
+        [string[]]$TransientErrorCodes = @(1605, 1612, 1618, 1619, 1641, 3010),
+        [int]$MaxRetries = 2
+    )
+    $exitCode = -1
+    for ($i = 0; $i -lt $MaxRetries + 1; $i++) {
+        & $FilePath @Arguments 2>&1 | ForEach-Object { Write-SetupLog ([string]$_) }
+        $exitCode = $LASTEXITCODE
+        if ($exitCode -eq 0) { return $true }
+        if ($TransientErrorCodes -contains $exitCode) {
+            Write-SetupLog "Perėjusi klaida ($exitCode). Bandoma iš naujo ($($i+1)/$MaxRetries)..." 'WARN'
+            Start-Sleep -Seconds (3 * ($i + 1))
+            continue
+        }
+        if ($i -lt $MaxRetries) {
+            Write-SetupLog "Klaida ($exitCode). Bandoma iš naujo ($($i+1)/$MaxRetries)..." 'WARN'
+            Start-Sleep -Seconds (3 * ($i + 1))
+            continue
+        }
+        throw "$FilePath baigė darbą su kodu $exitCode."
+    }
+    return $true
+}
+
+function Test-WinGetPackageInstalled {
+    param([string]$Id, [string]$Source = 'winget', [switch]$MsStore)
+    $sourceArg = if ($MsStore) { 'msstore' } else { $Source }
+    try {
+        $listOutput = & winget.exe list --id $Id --exact --source $sourceArg --accept-source-agreements --disable-interactivity 2>&1
+        return ($listOutput -join "`n") -match [regex]::Escape($Id)
+    } catch {
+        return $false
+    }
+}
+
 function Install-Programs {
     param([object[]]$Items)
     if ($Items.Count -eq 0) { Write-SetupLog 'Programos: niekas nepasirinkta.' 'WARN'; return }
@@ -239,14 +283,24 @@ function Install-Programs {
                 return
             }
 
-            $arguments = @('install', '--id', $item.Id, '--exact', '--source', $item.Source, '--silent', '--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity')
-            Invoke-NativeCommand -FilePath $winget.Source -Arguments $arguments
+            # Skip if already installed (Item 4)
+            $isInstalled = Test-WinGetPackageInstalled -Id $item.Id -Source $item.Source
+            if ($isInstalled) {
+                Write-SetupLog "Paketas $($item.Id) jau įdiegtas. Praleidžiama." 'OK'
+                return
+            }
 
+            # Use safe command with retries for transient errors (Item 8)
+            $arguments = @('install', '--id', $item.Id, '--exact', '--source', $item.Source, '--silent', '--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity')
+            Invoke-NativeCommandSafe -FilePath $winget.Source -Arguments $arguments
+
+            # Verify installation succeeded
             $listOutput = @(& $winget.Source list --id $item.Id --exact --source $item.Source --accept-source-agreements --disable-interactivity 2>&1)
             if ($LASTEXITCODE -ne 0 -or -not (($listOutput -join "`n") -match [regex]::Escape($item.Id))) {
-                throw "Po diegimo WinGet patikra nerado $($item.Id)."
+                Write-SetupLog "WinGet patikra nerado $($item.Id). Paketas gali būti iš dalies įdiegtas." 'WARN'
+            } else {
+                Write-SetupLog "Patikrintas įdiegtas paketas: $($item.Id)." 'OK'
             }
-            Write-SetupLog "Patikrintas įdiegtas paketas: $($item.Id)."
         }
     }
 }
@@ -309,6 +363,47 @@ function Set-PrivacyOption {
             Set-RegistryValue 'HKCU:\Software\Microsoft\InputPersonalization' 'RestrictImplicitTextCollection' 1
         }
         default { throw "Neatpažinta privatumo parinktis: $Key" }
+    }
+}
+
+function Get-CurrentConfig {
+    param(
+        [System.Windows.Forms.CheckedListBox]$ProgramList,
+        [System.Windows.Forms.CheckedListBox]$ExtensionList,
+        [System.Collections.ArrayList]$SettingsLists,
+        [System.Windows.Forms.CheckedListBox]$AppsList
+    )
+    $config = [ordered]@{
+        'Programos' = @($ProgramList.CheckedItems | ForEach-Object { $_.Id })
+        'VivaldiPlėtiniai' = @($ExtensionList.CheckedItems | ForEach-Object { $_.Id })
+        'IntegruotosProgramėlės' = @($AppsList.CheckedItems | ForEach-Object { $_.Package })
+        'Nustatymai' = @{}
+    }
+    foreach ($list in $SettingsLists) {
+        foreach ($item in $list.CheckedItems) {
+            if ($item.Key) {
+                $config.Nustatymai[$item.Key] = $true
+            }
+        }
+    }
+    return $config
+}
+
+function Set-UninstallMode {
+    param([object[]]$Items)
+    if ($Items.Count -eq 0) { Write-SetupLog 'Naudoti: niekas nepasirinkta.' 'WARN'; return }
+    foreach ($item in $Items) {
+        Invoke-LoggedAction -Description "Atstatyti (nešalinti): $($item.Name)" -Action {
+            if ($item.InstallType -eq 'OfficialPage') {
+                Write-SetupLog "Oficialus puslapis atidarytas rankiniam įdiegimui: $($item.Url)." 'WARN'
+                Start-Process -FilePath $item.Url
+                return
+            }
+            # Reinstall via winget
+            $arguments = @('install', '--id', $item.Id, '--exact', '--source', $item.Source, '--silent', '--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity')
+            Invoke-NativeCommandSafe -FilePath 'winget.exe' -Arguments $arguments
+            Write-SetupLog "Atstatytas paketas: $($item.Id)." 'OK'
+        }
     }
 }
 
@@ -732,6 +827,80 @@ $openLogButton.Add_Click({
 })
 
 $runButton.Add_Click({
+    if ($DryRun) {
+        $config = Get-CurrentConfig -ProgramList $programList -ExtensionList $extensionList -SettingsLists $settingsLists -AppsList $appsList
+        Write-SetupLog '=== DRY RUN: Kas būtų padaryta ===' 'OK'
+        foreach ($id in $config.Programos) { Write-SetupLog "Įdiegti (planuota): $id" 'INFO' }
+        foreach ($id in $config.VivaldiPlėtiniai) { Write-SetupLog "Nustatyti plėtinį (planuota): $id" 'INFO' }
+        foreach ($pkg in $config.IntegruotosProgramėlės) { Write-SetupLog "Pašalinti (planuota): $pkg" 'INFO' }
+        foreach ($key in $config.Nustatymai.Keys) { Write-SetupLog "Nustatyti (planuota): $key" 'INFO' }
+        [void][System.Windows.Forms.MessageBox]::Show("Dry Run baigtas. Žurnale matote, kas būtų padaryta.", $AppName, 'OK', 'Information')
+        return
+    }
+
+    if ($ExportConfig) {
+        $config = Get-CurrentConfig -ProgramList $programList -ExtensionList $extensionList -SettingsLists $settingsLists -AppsList $appsList
+        $json = $config | ConvertTo-Json -Depth 4
+        [System.IO.File]::WriteAllText($ExportConfig, $json, [System.Text.Encoding]::UTF8)
+        Write-SetupLog "Konfigūracija išsaugota: $ExportConfig" 'OK'
+        [void][System.Windows.Forms.MessageBox]::Show("Konfigūracija išsaugota:\n$ExportConfig", $AppName, 'OK', 'Information')
+        return
+    }
+
+    if ($ImportConfig) {
+        try {
+            $json = [System.IO.File]::ReadAllText($ImportConfig, [System.Text.Encoding]::UTF8)
+            $config = $json | ConvertFrom-Json
+            # Restore program selections
+            foreach ($id in $config.Programos) {
+                for ($i = 0; $i -lt $programList.Items.Count; $i++) {
+                    if ([string]$programList.Items[$i].Id -eq $id) { $programList.SetItemChecked($i, $true) }
+                }
+            }
+            # Restore extension selections
+            foreach ($id in $config.VivaldiPlėtiniai) {
+                for ($i = 0; $i -lt $extensionList.Items.Count; $i++) {
+                    if ([string]$extensionList.Items[$i].Id -eq $id) { $extensionList.SetItemChecked($i, $true) }
+                }
+            }
+            # Restore app removal selections
+            foreach ($pkg in $config.IntegruotosProgramėlės) {
+                for ($i = 0; $i -lt $appsList.Items.Count; $i++) {
+                    if ([string]$appsList.Items[$i].Package -eq $pkg) { $appsList.SetItemChecked($i, $true) }
+                }
+            }
+            # Restore settings selections
+            foreach ($key in $config.Nustatymai.Keys) {
+                foreach ($list in $settingsLists) {
+                    for ($i = 0; $i -lt $list.Items.Count; $i++) {
+                        if ([string]$list.Items[$i].Key -eq $key) { $list.SetItemChecked($i, $true) }
+                    }
+                }
+            }
+            Write-SetupLog "Konfigūracija importuota iš: $ImportConfig" 'OK'
+            [void][System.Windows.Forms.MessageBox]::Show("Konfigūracija įkelta. Spauskite VYKDYTI.", $AppName, 'OK', 'Information')
+        } catch {
+            Write-SetupLog "Nepavyko importuoti konfigūracijos: $($_.Exception.Message)" 'ERROR'
+        }
+        return
+    }
+
+    if ($Uninstall) {
+        $answer = [System.Windows.Forms.MessageBox]::Show('Ar tikrai norite atstatyti visas pasirinktas programas? Šis veiksmas įdiegs jas iš naujo.', 'Patvirtinkite atkūrimą', 'YesNo', 'Warning')
+        if ($answer -ne [System.Windows.Forms.DialogResult]::Yes) { return }
+        $runButton.Enabled = $false
+        $tabs.SelectedTab = $logTab
+        try {
+            Write-SetupLog "$AppName v$AppVersion atkūrimo režimas pradėtas." 'OK'
+            try { Set-UninstallMode -Items @(Get-CheckedCatalogItems $programList) }
+            catch { Write-SetupLog "Atkūrimo dalies klaida: $($_.Exception.Message)" 'ERROR' }
+            [void][System.Windows.Forms.MessageBox]::Show("Atkūrimas baigtas.", $AppName, 'OK', 'Information')
+        } finally {
+            $runButton.Enabled = $true
+        }
+        return
+    }
+
     $answer = [System.Windows.Forms.MessageBox]::Show('Ar dabar pritaikyti visas pažymėtas parinktis? Kai kuriems pakeitimams reikės atsijungti arba paleisti Windows iš naujo.', 'Patvirtinkite vykdymą', 'YesNo', 'Warning')
     if ($answer -ne [System.Windows.Forms.DialogResult]::Yes) { return }
     $runButton.Enabled = $false
