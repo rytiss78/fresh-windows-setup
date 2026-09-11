@@ -2,20 +2,25 @@
 
 This folder is the authoritative shared workspace for Codex and the user's local Hermes agent. The user asked Codex to take over the existing project and make it available to Hermes.
 
-## Existing application
+## Application
 
-- `FreshWindowsSetup.ps1`: Fresh Windows Setup v1.2.0, PowerShell 5.1 Windows Forms application, by Emocinis Taikinys. Keep the Lithuanian UI and author credit.
-- `FreshWindowsSetup.exe`: existing executable. Its build recipe and correspondence to the current source have not yet been verified.
-- Features include selectable software installation, bundled app removal, Windows settings, privacy settings, and logging.
+- `FreshWindowsSetup.ps1`: Fresh Windows Setup v1.3.0, PowerShell 5.1 WinForms app by Emocinis Taikinys. Lithuanian UI preserved.
+- `FreshWindowsSetup.UI.ps1`: Improved UI version — cleaner layout, standard tabs, progress bar, status label. Same functionality.
+- `FreshWindowsSetup.UI.exe`: Compiled from UI source via PS2EXE (v0.5.0.34). Valid PE, 77 KB. Requires admin.
+- Features: selectable software installation, bundled app removal, Windows settings, privacy tweaks, logging.
+
+## Build recipe
+
+```powershell
+Import-Module ps2exe
+Invoke-ps2exe `
+    -InputFile 'FreshWindowsSetup.UI.ps1' `
+    -OutputFile 'FreshWindowsSetup.UI.exe' `
+    -supportOS -DPIAware -winFormsDPIAware -requireAdmin
+```
 
 ## Working together
 
-Work directly in this folder. Read current files before editing and preserve the other agent's changes. Record significant changes and validation in `PROJECT-NOTES.md`.
-
-Sharing the project does not itself request application changes or execution of Windows setup actions. Wait for a concrete development task before changing application behavior.
-
-## Validation
-
-Start with a PowerShell parser check. The script exposes `-ValidateOnly`, which constructs the UI and exits before showing it; inspect the current code before using it. Normal launch requests elevation and the interface can apply system changes. Do not run normal setup merely to test code.
+Work directly in this folder. Preserve the other agent's changes. Record significant changes in `PROJECT-NOTES.md`.
 
 Do not claim the EXE is updated after changing the script unless it has actually been rebuilt and verified.
