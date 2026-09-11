@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 Fresh Windows Setup
 A single-file, first-boot Windows configuration utility.
