@@ -9,6 +9,7 @@ Lietuviška grafinė priemonė, skirta greitai paruošti ką tik įdiegtą **Win
 - Lietuviška, tamsaus režimo grafinė sąsaja.
 - Windows nustatymai suskirstyti aiškiomis grupėmis.
 - Integruotų Windows programų šalinimas.
+- Paleisties programų įrašų ir suplanuotų užduočių peržiūra bei pasirinktų įrašų šalinimas su atsarginėmis kopijomis.
 - Programų diegimas naudojant **WinGet** arba oficialius kūrėjų puslapius.
 - Pasirinktų Vivaldi plėtinių registravimas per naršyklės politiką.
 - Kiekvieno pritaikyto nustatymo **nuskaitymas ir patikrinimas**.
@@ -20,6 +21,7 @@ Lietuviška grafinė priemonė, skirta greitai paruošti ką tik įdiegtą **Win
 ### EXE versija (rekomenduojama)
 
 1. Atsisiųskite `FreshWindowsSetup.UI.exe` iš [GitHub releases](https://github.com/rytiss78/fresh-windows-setup/releases).
+   Taip pat atsisiųskite `FreshWindowsSetup.UI.exe.config` ir laikykite jį šalia EXE (DPI nustatymai).
 2. Paleiskite failą.
 3. Patvirtinkite administratoriaus teisių užklausą.
 4. Pasirinkite norimus veiksmus ir pradėkite vykdymą.
@@ -69,6 +71,32 @@ Galima pašalinti arba išjungti:
 - "Xbox" programas.
 
 Šalinant "Microsoft Edge", **WebView2 paliekamas**, nes jo gali reikėti kitoms Windows ir trečiųjų šalių programoms.
+
+## Paleisties programos ir suplanuotos užduotys (v1.4.0)
+
+Skirtukuose **Paleisties programos** ir **Suplanuotos užduotys** spauskite **Atnaujinti sąrašą**, pažymėkite norimus įrašus ir spauskite **Pašalinti pažymėtus**. Visi įrašai iš pradžių nepažymėti. Šie veiksmai vykdomi atskirai nuo pagrindinio **VYKDYTI NUSTATYMĄ** mygtuko ir neįtraukiami į nustatymų konfigūracijos importą / eksportą. `-DryRun` parodo planuojamą šalinimą žurnale ir neatlieka pakeitimų.
+
+- Paleisties sąraše rodomi HKCU ir HKLM `Run` / `RunOnce` įrašai (32 ir 64 bitų registro rodiniai) bei dabartinio naudotojo ir visų naudotojų paleisties aplankų failai. Šalinamas automatinio paleidimo įrašas arba paleisties failas; pati programa neišdiegiama. Kiti automatinio paleidimo mechanizmai, pvz., tarnybos ir Store programų paleisties parinktys, čia nerodomi.
+- Užduočių sąraše rodomas visas kelias, būsena ir veiksmai. Galima peržiūrėti ir Windows sistemines bei paslėptas užduotis. Šalinkite tik atpažįstamas užduotis: jų šalinimas gali sutrikdyti Windows, atnaujinimus arba programas. Vykdomos užduotys nešalinamos; pirmiausia sustabdykite jas užduočių planuoklyje.
+- Prieš šalinimą tikrinama, ar įrašas nepasikeitė, ir išsaugoma atsarginė kopija. Jei kopijos išsaugoti nepavyksta, įrašas nešalinamas. Klaidos rodomos žurnale.
+
+Kopijų vieta: `%LOCALAPPDATA%\FreshWindowsSetup\RemovalBackups\`. Kiekvienas pašalinimas turi atskirą aplanką, kurio kelias įrašomas žurnale. Šalinimas taikomas paskyrai, kurios teisėmis paleista programa.
+
+**Atkūrimas:** paleisties failą nukopijuokite į pradinį kelią, nurodytą `startup.xml` (šį failą galima perskaityti su `Import-Clixml`). Registro įrašui administratoriaus PowerShell lange naudokite:
+
+```powershell
+$entry = Import-Clixml -LiteralPath 'C:\kelias\iki\kopijos\startup.xml'
+$base = [Microsoft.Win32.RegistryKey]::OpenBaseKey(
+    [Microsoft.Win32.RegistryHive]$entry.Hive,
+    [Microsoft.Win32.RegistryView]$entry.View)
+try {
+    $key = $base.CreateSubKey($entry.Path)
+    try { $key.SetValue($entry.ValueName, $entry.Value, [Microsoft.Win32.RegistryValueKind]$entry.ValueKind) }
+    finally { $key.Dispose() }
+} finally { $base.Dispose() }
+```
+
+Užduočių planuoklyje pasirinkite **Import Task** ir atverkite `task.xml`. Pradinį užduoties aplanką ir pavadinimą rasite `task-location.xml` su `Import-Clixml`. Slaptažodžiai ir užduoties prieigos leidimai neįtraukiami į XML; juos gali reikėti nustatyti iš naujo.
 
 ## Diegiamos programos
 
@@ -135,6 +163,7 @@ Po kiekvieno Windows nustatymo programa perskaito faktinę reikšmę ir palygina
 | 1.0.0   | ?          | Pradinis leidimas                              |
 | 1.2.0   | ?          | Ankstesnis pažymėtas leidimas                  |
 | 1.3.0   | 2026-09-12 | Pagrindiniai pataisymai, klaidų taisymai, UI  |
+| 1.4.0   | 2026-10-05 | Paleisties programų ir suplanuotų užduočių šalinimas su kopijomis |
 
 ### v1.3.0 pataisymai
 
@@ -145,5 +174,5 @@ Po kiekvieno Windows nustatymo programa perskaito faktinę reikšmę ir palygina
 
 ---
 
-**Versija:** 1.3.0  
+**Versija:** 1.4.0
 **Autorius:** Emocinis Taikinys

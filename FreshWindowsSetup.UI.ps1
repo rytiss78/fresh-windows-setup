@@ -19,7 +19,7 @@ param(
 Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
 $AppName = 'Fresh Windows Setup'
-$AppVersion = '1.3.0'
+$AppVersion = '1.4.0'
 $AppAuthor = 'Emocinis Taikinys'
 
 $ProgramCatalog = @(
@@ -628,6 +628,177 @@ function Set-WindowsOption {
     }
 }
 
+function Get-StartupEntries {
+    foreach ($hive in @([Microsoft.Win32.RegistryHive]::CurrentUser, [Microsoft.Win32.RegistryHive]::LocalMachine)) {
+        foreach ($view in @([Microsoft.Win32.RegistryView]::Registry64, [Microsoft.Win32.RegistryView]::Registry32)) {
+            if (-not [Environment]::Is64BitOperatingSystem -and $view -eq [Microsoft.Win32.RegistryView]::Registry64) { continue }
+            $base = [Microsoft.Win32.RegistryKey]::OpenBaseKey($hive, $view)
+            try {
+                foreach ($suffix in @('Run', 'RunOnce')) {
+                    $path = 'Software\Microsoft\Windows\CurrentVersion\' + $suffix
+                    $key = $base.OpenSubKey($path)
+                    if ($null -eq $key) { continue }
+                    try {
+                        foreach ($valueName in $key.GetValueNames()) {
+                            $value = $key.GetValue($valueName, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+                            [pscustomobject]@{
+                                Name = "$valueName [$hive / $view / $suffix] — $value"
+                                Kind = 'Registry'; Hive = $hive; View = $view; Path = $path
+                                ValueName = $valueName; Value = $value; ValueKind = $key.GetValueKind($valueName)
+                                Default = $false
+                            }
+                        }
+                    } finally { $key.Dispose() }
+                }
+            } finally { $base.Dispose() }
+        }
+    }
+    foreach ($folder in @([Environment]::GetFolderPath('Startup'), [Environment]::GetFolderPath('CommonStartup'))) {
+        if (-not $folder -or -not (Test-Path -LiteralPath $folder)) { continue }
+        foreach ($file in @(Get-ChildItem -LiteralPath $folder -File -Force -ErrorAction Stop)) {
+            if ($file.Name -eq 'desktop.ini') { continue }
+            [pscustomobject]@{
+                Name = "$($file.Name) [$folder]"; Kind = 'File'; Path = $file.FullName
+                Hash = (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash; Default = $false
+            }
+        }
+    }
+}
+
+function Get-TaskEntries {
+    $service = New-Object -ComObject 'Schedule.Service'
+    $service.Connect()
+    foreach ($task in @(Get-ScheduledTask -ErrorAction Stop | Sort-Object TaskPath, TaskName)) {
+        try {
+            $registered = $service.GetFolder($task.TaskPath).GetTask($task.TaskName)
+            $actions = @($task.Actions | ForEach-Object {
+                if ($_.PSObject.Properties['Execute']) { "$($_.Execute) $($_.Arguments)" } else { $_.CimClass.CimClassName }
+            }) -join '; '
+            [pscustomobject]@{
+                Name = "$($task.TaskPath)$($task.TaskName) [$($task.State)] — $actions"
+                Kind = 'Task'; TaskPath = $task.TaskPath; TaskName = $task.TaskName
+                Xml = [string]$registered.Xml; Default = $false
+            }
+        } catch { Write-SetupLog "Užduoties nuskaitymo klaida: $($task.TaskPath)$($task.TaskName): $($_.Exception.Message)" 'WARN' }
+    }
+}
+
+function New-RemovalBackupDirectory {
+    $path = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) ('FreshWindowsSetup\RemovalBackups\' + [guid]::NewGuid().ToString('N'))
+    [void][IO.Directory]::CreateDirectory($path)
+    return $path
+}
+
+function Remove-StartupEntry {
+    param([Parameter(Mandatory)]$Item)
+    if ($Item.Kind -eq 'Registry') {
+        $base = [Microsoft.Win32.RegistryKey]::OpenBaseKey($Item.Hive, $Item.View)
+        try {
+            $key = $base.OpenSubKey($Item.Path, $true)
+            if ($null -eq $key) { throw 'Įrašas pasikeitė. Atnaujinkite sąrašą.' }
+            try {
+                $value = $key.GetValue($Item.ValueName, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+                if ($key.GetValueNames() -cnotcontains $Item.ValueName -or $key.GetValueKind($Item.ValueName) -ne $Item.ValueKind -or (ConvertTo-Json -InputObject $value -Compress) -cne (ConvertTo-Json -InputObject $Item.Value -Compress)) {
+                    throw 'Įrašas pasikeitė. Atnaujinkite sąrašą.'
+                }
+                $backup = New-RemovalBackupDirectory
+                $Item | Export-Clixml -LiteralPath (Join-Path $backup 'startup.xml') -Depth 5
+                Write-SetupLog "Atsarginė kopija: $backup"
+                $key.DeleteValue($Item.ValueName, $true)
+                if ($key.GetValueNames() -ccontains $Item.ValueName) { throw 'Registro įrašas nepašalintas.' }
+            } finally { $key.Dispose() }
+        } finally { $base.Dispose() }
+    } elseif ($Item.Kind -eq 'File') {
+        $allowed = @([Environment]::GetFolderPath('Startup'), [Environment]::GetFolderPath('CommonStartup'))
+        $parent = [IO.Path]::GetDirectoryName([IO.Path]::GetFullPath($Item.Path))
+        if ($allowed -notcontains $parent) { throw 'Failas nėra paleisties aplanke.' }
+        if ((Get-FileHash -LiteralPath $Item.Path -Algorithm SHA256).Hash -cne $Item.Hash) { throw 'Failas pasikeitė. Atnaujinkite sąrašą.' }
+        $backup = New-RemovalBackupDirectory
+        Copy-Item -LiteralPath $Item.Path -Destination (Join-Path $backup ([IO.Path]::GetFileName($Item.Path))) -ErrorAction Stop
+        $Item | Export-Clixml -LiteralPath (Join-Path $backup 'startup.xml') -Depth 5
+        if ((Get-FileHash -LiteralPath (Join-Path $backup ([IO.Path]::GetFileName($Item.Path))) -Algorithm SHA256).Hash -cne $Item.Hash) { throw 'Atsarginės kopijos patikra nepavyko.' }
+        Write-SetupLog "Atsarginė kopija: $backup"
+        Remove-Item -LiteralPath $Item.Path -Force -ErrorAction Stop
+        if (Test-Path -LiteralPath $Item.Path) { throw 'Paleisties failas nepašalintas.' }
+    } else { throw 'Neatpažintas paleisties įrašo tipas.' }
+}
+
+function Remove-TaskEntry {
+    param([Parameter(Mandatory)]$Item)
+    $service = New-Object -ComObject 'Schedule.Service'
+    $service.Connect()
+    $folder = $service.GetFolder($Item.TaskPath)
+    $task = $folder.GetTask($Item.TaskName)
+    if ([string]$task.Xml -cne $Item.Xml) { throw 'Užduotis pasikeitė. Atnaujinkite sąrašą.' }
+    if ([int]$task.State -eq 4) { throw 'Užduotis vykdoma. Sustabdykite ją užduočių planuoklyje ir bandykite dar kartą.' }
+    $backup = New-RemovalBackupDirectory
+    [IO.File]::WriteAllText((Join-Path $backup 'task.xml'), $Item.Xml, [Text.Encoding]::Unicode)
+    $Item | Select-Object TaskPath, TaskName | Export-Clixml -LiteralPath (Join-Path $backup 'task-location.xml')
+    Write-SetupLog "Atsarginė kopija: $backup"
+    $folder.DeleteTask($Item.TaskName, 0)
+    $remaining = @($folder.GetTasks(1) | Where-Object { $_.Name -ceq $Item.TaskName })
+    if ($remaining.Count -gt 0) { throw 'Užduotis nepašalinta.' }
+}
+
+function Update-RemovalList {
+    param([System.Windows.Forms.CheckedListBox]$List, [ValidateSet('Startup', 'Task')][string]$Kind)
+    $List.Items.Clear()
+    try {
+        $items = if ($Kind -eq 'Startup') { @(Get-StartupEntries) } else { @(Get-TaskEntries) }
+        foreach ($entry in $items) { [void]$List.Items.Add($entry, $false) }
+        Write-SetupLog "Sąrašas atnaujintas ($Kind): $($items.Count) įrašų."
+    } catch { Write-SetupLog "Sąrašo nuskaitymo klaida ($Kind): $($_.Exception.Message)" 'ERROR' }
+}
+
+function Invoke-SelectedRemoval {
+    param([System.Windows.Forms.CheckedListBox]$List, [ValidateSet('Startup', 'Task')][string]$Kind)
+    $selected = @($List.CheckedItems | ForEach-Object { $_ })
+    if ($selected.Count -eq 0) {
+        [void][System.Windows.Forms.MessageBox]::Show('Pirmiausia pažymėkite norimus pašalinti įrašus.', $AppName, 'OK', 'Information')
+        return
+    }
+    if ($DryRun) {
+        foreach ($entry in $selected) { Write-SetupLog "DRY RUN: Pašalinti (planuota): $($entry.Name)" }
+        return
+    }
+    $summary = ($selected | ForEach-Object { $_.Name }) -join [Environment]::NewLine
+    $answer = [System.Windows.Forms.MessageBox]::Show("Pašalinti $($selected.Count) pažymėtus įrašus? Sisteminės užduotys gali būti būtinos Windows veikimui. Prieš šalinimą bus išsaugotos atsarginės kopijos.`r`n`r`n$summary", 'Patvirtinkite šalinimą', 'YesNo', 'Warning')
+    if ($answer -ne [System.Windows.Forms.DialogResult]::Yes) { return }
+    $tabs.Enabled = $false
+    $runButton.Enabled = $false
+    try {
+        foreach ($entry in $selected) {
+            Invoke-LoggedAction -Description "Pašalinti: $($entry.Name)" -Action {
+                if ($Kind -eq 'Startup') { Remove-StartupEntry $entry } else { Remove-TaskEntry $entry }
+            }
+        }
+        Update-RemovalList -List $List -Kind $Kind
+        [void][System.Windows.Forms.MessageBox]::Show('Šalinimas baigtas. Peržiūrėkite žurnalą ir atsarginių kopijų vietas.', $AppName, 'OK', 'Information')
+    } finally { $tabs.Enabled = $true; $runButton.Enabled = $true }
+}
+
+function Add-RemovalTab {
+    param([System.Windows.Forms.TabControl]$Tabs, [string]$Title, [string]$Description, [System.Windows.Forms.CheckedListBox]$List, [System.Windows.Forms.Button]$Refresh, [System.Windows.Forms.Button]$Remove)
+    $tab = [System.Windows.Forms.TabPage]::new($Title)
+    $layout = [System.Windows.Forms.TableLayoutPanel]::new()
+    $layout.Dock = 'Fill'; $layout.Padding = [System.Windows.Forms.Padding]::new(10)
+    $layout.ColumnCount = 1; $layout.RowCount = 3
+    [void]$layout.RowStyles.Add([System.Windows.Forms.RowStyle]::new('AutoSize'))
+    [void]$layout.RowStyles.Add([System.Windows.Forms.RowStyle]::new('Percent', 100))
+    [void]$layout.RowStyles.Add([System.Windows.Forms.RowStyle]::new('AutoSize'))
+    $label = [System.Windows.Forms.Label]::new()
+    $label.AutoSize = $true; $label.MaximumSize = [Drawing.Size]::new(850, 0)
+    $label.Text = $Description; $label.Padding = [System.Windows.Forms.Padding]::new(0, 0, 0, 10)
+    $buttons = [System.Windows.Forms.FlowLayoutPanel]::new()
+    $buttons.AutoSize = $true; $buttons.Dock = 'Fill'
+    $Refresh.Text = 'Atnaujinti sąrašą'; $Refresh.AutoSize = $true
+    $Remove.Text = 'Pašalinti pažymėtus'; $Remove.AutoSize = $true
+    $buttons.Controls.AddRange(@($Refresh, $Remove))
+    $layout.Controls.Add($label, 0, 0); $layout.Controls.Add($List, 0, 1); $layout.Controls.Add($buttons, 0, 2)
+    $tab.Controls.Add($layout); [void]$Tabs.TabPages.Add($tab)
+}
+
+
 function New-CatalogList {
     param([Parameter(Mandatory)][AllowEmptyCollection()][object[]]$Catalog, [string]$EmptyMessage = 'No items have been supplied yet.')
     $list = [System.Windows.Forms.CheckedListBox]::new()
@@ -725,6 +896,7 @@ $root.Controls.Add($heading, 0, 0)
 
 $tabs = [System.Windows.Forms.TabControl]::new()
 $tabs.Dock = 'Fill'
+$tabs.Multiline = $true
 $root.Controls.Add($tabs, 0, 1)
 
 $programList = New-CatalogList -Catalog $ProgramCatalog
@@ -774,6 +946,21 @@ $settingsFlow.Add_SizeChanged({
 })
 $settingsTab.Controls.Add($settingsFlow)
 [void]$tabs.TabPages.Add($settingsTab)
+
+$startupList = New-CatalogList -Catalog @()
+$startupList.Items.Clear(); $startupList.Enabled = $true; $startupList.HorizontalScrollbar = $true
+$taskList = New-CatalogList -Catalog @()
+$taskList.Items.Clear(); $taskList.Enabled = $true; $taskList.HorizontalScrollbar = $true
+$startupRefresh = [System.Windows.Forms.Button]::new()
+$startupRemove = [System.Windows.Forms.Button]::new()
+$taskRefresh = [System.Windows.Forms.Button]::new()
+$taskRemove = [System.Windows.Forms.Button]::new()
+Add-RemovalTab -Tabs $tabs -Title 'Paleisties programos' -Description 'Registro Run / RunOnce įrašai ir dabartinio naudotojo bei visų naudotojų paleisties failai. Šalinamas tik automatinis paleidimas. Sąrašą įkelkite mygtuku „Atnaujinti sąrašą“. Šalinimas vykdomas atskiru mygtuku.' -List $startupList -Refresh $startupRefresh -Remove $startupRemove
+Add-RemovalTab -Tabs $tabs -Title 'Suplanuotos užduotys' -Description 'Visos prieinamos užduotys, įskaitant paslėptas ir Windows sistemines užduotis. Sąrašą įkelkite mygtuku „Atnaujinti sąrašą“. Pažymėkite tik atpažįstamas užduotis. Šalinimas vykdomas atskiru mygtuku; vykdomos užduotys nešalinamos.' -List $taskList -Refresh $taskRefresh -Remove $taskRemove
+$startupRefresh.Add_Click({ Update-RemovalList -List $startupList -Kind Startup })
+$taskRefresh.Add_Click({ Update-RemovalList -List $taskList -Kind Task })
+$startupRemove.Add_Click({ Invoke-SelectedRemoval -List $startupList -Kind Startup })
+$taskRemove.Add_Click({ Invoke-SelectedRemoval -List $taskList -Kind Task })
 
 $logTab = [System.Windows.Forms.TabPage]::new('Žurnalas')
 $script:LogBox = [System.Windows.Forms.RichTextBox]::new()

@@ -4,10 +4,10 @@ This folder is the authoritative shared workspace for Codex and the user's local
 
 ## Application
 
-- `FreshWindowsSetup.ps1`: Fresh Windows Setup v1.3.0, PowerShell 5.1 WinForms app by Emocinis Taikinys. Lithuanian UI preserved.
+- `FreshWindowsSetup.ps1`: Fresh Windows Setup v1.4.0, PowerShell 5.1 WinForms app by Emocinis Taikinys. Lithuanian UI preserved.
 - `FreshWindowsSetup.UI.ps1`: Improved UI version — cleaner layout, standard tabs, progress bar, status label. Same functionality.
-- `FreshWindowsSetup.UI.exe`: Compiled from UI source via PS2EXE (v0.5.0.34). Valid PE, 77 KB. Requires admin.
-- Features: selectable software installation, bundled app removal, Windows settings, privacy tweaks, logging.
+- `FreshWindowsSetup.UI.exe`: Compiled from UI source via PS2EXE (v0.5.0.34). Requires admin. Ship `FreshWindowsSetup.UI.exe.config` alongside it for DPI support.
+- Features: selectable software installation, bundled app removal, Windows settings, privacy tweaks, logging, startup-entry removal, scheduled-task removal with backups.
 
 ## Build recipe
 
@@ -16,7 +16,9 @@ Import-Module ps2exe
 Invoke-ps2exe `
     -InputFile 'FreshWindowsSetup.UI.ps1' `
     -OutputFile 'FreshWindowsSetup.UI.exe' `
-    -supportOS -DPIAware -winFormsDPIAware -requireAdmin
+    -supportOS -DPIAware -winFormsDPIAware -requireAdmin `
+    -version '1.4.0.0' -title 'Fresh Windows Setup' `
+    -description 'Fresh Windows Setup v1.4.0' -company 'Emocinis Taikinys'
 ```
 
 ## Working together

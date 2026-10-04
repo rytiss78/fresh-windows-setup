@@ -1,5 +1,10 @@
 
 # Build artifacts
 *.exe.config
+!FreshWindowsSetup.UI.exe.config
+_build_*/
+_build_*.zip
+_build_*.json
+_build_*.txt
 _build_*.ps1
 _build_*.cs

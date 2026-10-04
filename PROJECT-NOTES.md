@@ -1,5 +1,17 @@
 # Project notes
 
+## 2026-10-05 — v1.4.0 startup and scheduled-task removal
+
+- Added Lithuanian startup and scheduled-task tabs to both standalone scripts. Inventories load on refresh, every entry starts unchecked, and removal uses separate buttons and explicit confirmation. Tabs wrap at smaller window widths.
+- Startup inventory covers HKCU/HKLM Run and RunOnce in both registry views and current/common Startup files. Exact registry APIs and literal file paths prevent wildcard expansion. Installed applications are retained.
+- Task inventory displays full path, state and actions, including hidden/system tasks. Exact Task Scheduler COM APIs export and delete only the selected task. Running tasks and entries changed since discovery are blocked.
+- Backups are required before deletion under `%LOCALAPPDATA%\FreshWindowsSetup\RemovalBackups`; locations and errors are logged. Dry-run removal logs selections without changes. New inventories are intentionally separate from setup configuration import/export.
+- README includes scope, operation and manual recovery instructions. Task XML does not retain passwords or original task ACLs.
+- Rebuilt UI EXE with PS2EXE 0.5.0.34, version 1.4.0.0 and administrator manifest; verified PE header and byte-for-byte embedded source equality. Track and distribute the generated DPI config alongside the EXE.
+- Verified both scripts with Windows PowerShell 5.1 `-ValidateOnly`. `tests/Removal.Tests.ps1` checks task inventory/actions, unchecked defaults, exact deletion with wildcard characters, XML/location backups, changed/running task guards, backup failure, and startup scope. Task mutations use mocks; no real startup entry or scheduled task was removed during validation.
+- UI initialization checks passed for seven tabs, wrapped tab layout, empty removal selections and dry-run logging. PE administrator manifest verified. Release assets include the DPI config, both scripts and `SHA256SUMS.txt`.
+
+
 ## 2026-09-10 — Codex takeover and Hermes sharing
 
 The user identified this local folder as the existing project and requested that Codex manage it and share it with the local Hermes agent.
