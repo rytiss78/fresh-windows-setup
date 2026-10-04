@@ -1,4 +1,17 @@
 
+# Local AI workspace metadata
+AGENTS.md
+AGEN.md
+agents.md
+agen.md
+CLAUDE.md
+GEMINI.md
+PROJECT-NOTES.md
+.agents/
+.codex/
+.claude/
+.hermes/
+
 # Build artifacts
 *.exe.config
 !FreshWindowsSetup.UI.exe.config
