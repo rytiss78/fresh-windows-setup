@@ -148,7 +148,7 @@ $script:LogBox = $null
 
 function Write-SetupLog {
     param(
-        [Parameter(Mandatory)][string]$Message,
+        [Parameter(Mandatory)][AllowEmptyString()][string]$Message,
         [ValidateSet('INFO', 'OK', 'WARN', 'ERROR')][string]$Level = 'INFO'
     )
     $line = '[{0:HH:mm:ss}] [{1}] {2}' -f (Get-Date), $Level, $Message
