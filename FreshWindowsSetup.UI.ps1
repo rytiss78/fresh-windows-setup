@@ -28,7 +28,8 @@ $ProgramCatalog = @(
     [pscustomobject]@{ Name = '🖼️ Icaros'; InstallType = 'WinGet'; Id = 'Xanashi.Icaros'; Source = 'winget'; Default = $true }
     [pscustomobject]@{ Name = '📝 Notepad++'; InstallType = 'WinGet'; Id = 'Notepad++.Notepad++'; Source = 'winget'; Default = $true }
     [pscustomobject]@{ Name = '💡 OpenRGB'; InstallType = 'WinGet'; Id = 'OpenRGB.OpenRGB'; Source = 'winget'; Default = $true }
-    [pscustomobject]@{ Name = '🌈 Smart HDR Manager (beta; AMD palaikymas nepatvirtintas)'; InstallType = 'GitHubReleaseZip'; Repository = 'VantaCode420/SmartHdrManager'; AssetPattern = 'win-x64-standalone\.zip    [pscustomobject]@{ Name = '✨ OpenRGB Effects Plugin'; InstallType = 'WinGet'; Id = 'OpenRGB.OpenRGBEffectsPlugin'; Source = 'winget'; Default = $true }
+    [pscustomobject]@{ Name = '🌈 Smart HDR Manager (beta; AMD palaikymas nepatvirtintas)'; InstallType = 'GitHubReleaseZip'; Repository = 'VantaCode420/SmartHdrManager'; AssetPattern = 'win-x64-standalone\.zip$'; Default = $false }
+    [pscustomobject]@{ Name = '✨ OpenRGB Effects Plugin'; InstallType = 'WinGet'; Id = 'OpenRGB.OpenRGBEffectsPlugin'; Source = 'winget'; Default = $true }
     [pscustomobject]@{ Name = '🎬 PotPlayer 64 bitų'; InstallType = 'WinGet'; Id = 'Daum.PotPlayer'; Source = 'winget'; Default = $true }
     [pscustomobject]@{ Name = '🐍 Python 3.14'; InstallType = 'WinGet'; Id = 'Python.Python.3.14'; Source = 'winget'; Default = $true }
     [pscustomobject]@{ Name = '🧲 qBittorrent'; InstallType = 'WinGet'; Id = 'qBittorrent.qBittorrent'; Source = 'winget'; Default = $true }
