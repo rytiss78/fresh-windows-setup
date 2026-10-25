@@ -14,7 +14,6 @@ PROJECT-NOTES.md
 
 # Build artifacts
 *.exe.config
-!FreshWindowsSetup.UI.exe.config
 _build_*/
 _build_*.zip
 _build_*.json

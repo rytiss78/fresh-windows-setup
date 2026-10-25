@@ -22,7 +22,7 @@ Lietuviška grafinė priemonė, skirta greitai paruošti ką tik įdiegtą **Win
 
 ### EXE versija
 
-1. Atsisiųskite `FreshWindowsSetup.UI.exe` iš [GitHub releases](https://github.com/rytiss78/fresh-windows-setup/releases).
+1. Atsisiųskite [`FreshWindowsSetup.UI.exe`](https://github.com/rytiss78/fresh-windows-setup/raw/main/FreshWindowsSetup.UI.exe). Tai vienas failas – jokių papildomų failų (pvz., `.config`) nebereikia.
 2. Paleiskite failą ir patvirtinkite administratoriaus teisių užklausą.
 3. Pasirinkite norimus veiksmus, spauskite **Peržiūrėti ir vykdyti**, o peržiūroje – **Pradėti vykdymą**.
 
@@ -38,7 +38,7 @@ EXE failas nėra pasirašytas skaitmeniniu sertifikatu, todėl Windows gali paro
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\FreshWindowsSetup.UI.ps1"
 ```
 
-Programa pati patikrina administratoriaus teises ir, jei reikia, paprašo jas suteikti. `FreshWindowsSetup.ps1` yra tik suderinamumo paleidiklis, perduodantis valdymą `FreshWindowsSetup.UI.ps1` (abu failai turi būti tame pačiame aplanke).
+Programa pati patikrina administratoriaus teises ir, jei reikia, paprašo jas suteikti. `FreshWindowsSetup.UI.ps1` yra programos šaltinis – iš jo sukompiliuotas ir EXE failas.
 
 ### Komandinės eilutės parametrai
 
@@ -152,10 +152,10 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tests\Removal.Tests.ps
 EXE kūrimas su [PS2EXE](https://github.com/MScholtes/PS2EXE) (sąsajai būtinas `-STA`):
 
 ```powershell
-Invoke-PS2EXE -InputFile .\FreshWindowsSetup.UI.ps1 -OutputFile .\FreshWindowsSetup.UI.exe -STA -RequireAdmin -DPIAware -Title 'Fresh Windows Setup' -Version '2.0.0'
+Invoke-PS2EXE -InputFile .\FreshWindowsSetup.UI.ps1 -OutputFile .\FreshWindowsSetup.UI.exe -STA -NoConsole -RequireAdmin -DPIAware -Title 'Fresh Windows Setup' -Description 'Fresh Windows Setup' -Product 'Fresh Windows Setup' -Company 'Emocinis Taikinys' -Version '2.0.0'
 ```
 
-Konsolinė versija (be `-NoConsole`) rekomenduojama: programa pati paslepia savo konsolės langą, o WinGet ir kitos komandos nerodo mirksinčių langų. Sukūrę EXE, atnaujinkite `SHA256SUMS.txt`.
+`-NoConsole` – jokio konsolės lango; WinGet išvestis skaitoma tiesiogiai UTF-8 koduote, todėl lietuviški ir kiti simboliai žurnale nesugadinami. Nenaudokite `-winFormsDPIAware` ar `-configFile` – tada `.config` failas nekuriamas ir lieka vienas EXE. Sukūrę EXE, atnaujinkite `SHA256SUMS.txt`.
 
 ## Svarbu
 
@@ -185,7 +185,7 @@ Konsolinė versija (be `-NoConsole`) rekomenduojama: programa pati paslepia savo
 - Pataisyta: `-DryRun` ir eksportas užstrigdavo, kai buvo pažymėti oficialių puslapių įrašai; importas neatkurdavo nustatymų ir nenuimdavo numatytųjų pažymėjimų.
 - Pataisyta: WinGet „reikia perkrauti“ (3010) ir „jau įdiegta“ kodai laikomi sėkme, kartojamos tik laikinos klaidos; įdiegimo patikra naudoja išėjimo kodą vietoj sutrumpintos lentelės.
 - Pataisyta: valdiklių išjungimas Windows 11 24H2+ (UCPD blokuoja `TaskbarDa`) – naudojama politika.
-- Sujungta: `FreshWindowsSetup.ps1` ir `FreshWindowsSetup.UI.ps1` nebeturi atskirų, besiskiriančių kopijų.
+- Supaprastinta: vienas šaltinis `FreshWindowsSetup.UI.ps1` ir vienas EXE failas be konsolės lango ir be `.config`; pasikartojanti `FreshWindowsSetup.ps1` kopija pašalinta.
 - `Xbox Identity Provider` ir `Xbox TCUI` pagal nutylėjimą nebešalinami.
 
 ### v1.3.0 pataisymai

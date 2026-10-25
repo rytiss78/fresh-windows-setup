@@ -375,13 +375,27 @@ function Invoke-WinGet {
     }
     # MSI busy, download failed, another install in progress, no network, service unavailable.
     $transientCodes = @(1618, -1978335224, -1978334974, -1978334969, -1978335123)
+    $argumentLine = ($Arguments | ForEach-Object { if ($_ -match '[\s"]') { '"{0}"' -f ($_ -replace '"', '\"') } else { $_ } }) -join ' '
     for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
-        & $WinGet @Arguments 2>&1 | ForEach-Object {
-            $text = ([string]$_).Trim()
-            # Drop spinner frames and progress bars that WinGet prints even when redirected.
-            if ($text -and $text -notmatch '^[-\\|/]$' -and $text -notmatch '[█▒]') { Write-SetupLog $text }
+        # Read WinGet's UTF-8 output directly: the compiled EXE has no console, so PowerShell's own
+        # native-command capture would decode it with the ANSI code page.
+        $startInfo = [Diagnostics.ProcessStartInfo]::new($WinGet, $argumentLine)
+        $startInfo.UseShellExecute = $false
+        $startInfo.CreateNoWindow = $true
+        $startInfo.RedirectStandardOutput = $true
+        $startInfo.StandardOutputEncoding = [Text.UTF8Encoding]::new($false)
+        $process = [Diagnostics.Process]::Start($startInfo)
+        try {
+            while ($null -ne ($line = $process.StandardOutput.ReadLine())) {
+                $text = $line.Trim()
+                # Drop spinner frames and progress bars that WinGet prints even when redirected.
+                if ($text -and $text -notmatch '^[-\\|/]$' -and $text -notmatch '[█▒]') { Write-SetupLog $text }
+            }
+            $process.WaitForExit()
+            $exitCode = $process.ExitCode
+        } finally {
+            $process.Dispose()
         }
-        $exitCode = $LASTEXITCODE
         if ($successCodes.ContainsKey($exitCode)) {
             if ($successCodes[$exitCode]) { Write-SetupLog $successCodes[$exitCode] 'WARN' }
             return $exitCode

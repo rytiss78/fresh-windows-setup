@@ -16,7 +16,8 @@ foreach ($name in @('Get-OptionalProperty', 'Get-CatalogKey', 'Invoke-WinGet')) 
     $node = $ast.Find({ param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -eq $name }, $true)
     . ([scriptblock]::Create($node.Extent.Text))
 }
-function Write-SetupLog { param($Message, $Level) }
+$script:logged = [System.Collections.Generic.List[string]]::new()
+function Write-SetupLog { param($Message, $Level) $script:logged.Add([string]$Message) }
 
 $settings = @($WindowsSettingsSections | ForEach-Object { $_.Items })
 $catalogs = [ordered]@{ Program = $ProgramCatalog; Extension = $VivaldiExtensionCatalog; App = $BundledAppCatalog; Setting = $settings }
@@ -73,6 +74,12 @@ catch { Assert ($_.Exception.Message -match '0x00000001') "Unexpected failure te
 Assert ($watch.Elapsed.TotalSeconds -lt 3) 'A non-transient failure must not be retried.'
 try { [void](Invoke-WinGet -WinGet 'cmd.exe' -Arguments @('/c', 'exit 1618') -MaxAttempts 1); throw 'Expected failure.' }
 catch { Assert ($_.Exception.Message -match '0x00000652') "Unexpected failure text: $($_.Exception.Message)" }
+# Output is read as UTF-8 whatever the console code page, and progress bars are dropped.
+$script:logged.Clear()
+$probe = "[Console]::OutputEncoding = [Text.UTF8Encoding]::new(`$false); [string][char]0x104 + 'zuolas' + [char]0x2019 + 's'; ([string][char]0x2588 * 3) + [char]0x2592 + ' 50%'"
+[void](Invoke-WinGet -WinGet 'powershell.exe' -Arguments @('-NoProfile', '-Command', $probe))
+Assert ($script:logged -ccontains ([string][char]0x104 + 'zuolas' + [char]0x2019 + 's')) "WinGet output was not decoded as UTF-8: $($script:logged -join ' | ')"
+Assert ($script:logged.Count -eq 1) "Progress bar lines must be dropped: $($script:logged -join ' | ')"
 
 # The whole interface must build (no window is shown and nothing is changed).
 $output = & powershell.exe -NoProfile -ExecutionPolicy Bypass -STA -File $source -ValidateOnly 2>&1 | Out-String
